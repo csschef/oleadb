@@ -1,0 +1,71 @@
+/* ── RECIPE DETAIL ── */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    color: var(--accent);
+}
+
+.recipe-detail h1 {}
+
+.recipe-detail .meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.detail-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.detail-section h2 {
+    margin-bottom: 0.8rem;
+}
+
+.ingredient-list-detail {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.ingredient-list-detail li {
+    font-size: 0.95rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.ingredient-list-detail li:last-child {
+    border-bottom: none;
+}
+
+.ing-amount {
+    font-weight: 600;
+    color: var(--text);
+    min-width: 60px;
+    font-size: 0.9rem;
+}
+
+.recipe-description {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}

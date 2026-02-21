@@ -12,8 +12,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static HTML/CSS/JS from public/
-app.use(express.static(path.join(__dirname, '../public')));
+// Serve static HTML/CSS/JS from project root
+app.use(express.static(path.join(__dirname, '../')));
 
 /* ---------- TEST DB ---------- */
 try {
@@ -74,14 +74,41 @@ app.get('/units', async (req, res) => {
     }
 });
 
+/* ---------- CATEGORY LIST ---------- */
+app.get('/categories', async (req, res) => {
+    try {
+        const result = await db.query('SELECT id, name FROM recipe_category ORDER BY name');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
 /* ---------- GET ALL RECIPES ---------- */
 app.get('/recipes', async (req, res) => {
+    const { q, category } = req.query;
+    let query = `
+        SELECT r.id, r.name, r.description, r.servings, r.prep_time_minutes
+        FROM recipe r
+        WHERE 1=1
+    `;
+    const params = [];
+
+    if (q) {
+        params.push(`%${q}%`);
+        query += ` AND r.name ILIKE $${params.length}`;
+    }
+
+    if (category) {
+        params.push(category);
+        query += ` AND r.recipe_category_id = $${params.length}`;
+    }
+
+    query += ` ORDER BY r.created_at DESC`;
+
     try {
-        const recipes = await db.query(`
-            SELECT r.id, r.name, r.description, r.servings, r.prep_time_minutes
-            FROM recipe r
-            ORDER BY r.created_at DESC
-        `);
+        const recipes = await db.query(query, params);
 
         // For each recipe, fetch its ingredients
         const recipeList = await Promise.all(recipes.rows.map(async (recipe) => {

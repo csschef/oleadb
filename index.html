@@ -8,7 +8,8 @@
     <meta name="description" content="Bläddra bland alla sparade recept">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/general.css">
+    <link rel="stylesheet" href="css/index.css">
 </head>
 
 <body>
@@ -23,52 +24,18 @@
     <div class="container">
         <div class="page-header">
             <h1>Recept</h1>
-            <a href="create.html" class="btn btn-primary">+ Nytt recept</a>
+            <div class="search-filter-row">
+                <input type="text" id="search-input" placeholder="Sök recept...">
+                <select id="category-filter">
+                    <option value="">Alla kategorier</option>
+                </select>
+            </div>
         </div>
 
         <div id="content" class="loading">Laddar…</div>
     </div>
 
-    <script>
-        const API = `http://${window.location.hostname}:3000`;
-
-        async function load() {
-            const el = document.getElementById('content');
-            try {
-                const res = await fetch(`${API}/recipes`);
-                const recipes = await res.json();
-
-                if (!recipes.length) {
-                    el.className = '';
-                    el.innerHTML = `
-                        <div class="empty-state">
-                            <div class="icon">🍽️</div>
-                            <p>Inga recept ännu.</p><br>
-                            <a href="create.html" class="btn btn-primary">Skapa ditt första</a>
-                        </div>`;
-                    return;
-                }
-
-                el.className = 'recipe-grid';
-                el.innerHTML = recipes.map(r => `
-                    <a class="recipe-card" href="recipe.html?id=${r.id}">
-                        <h3>${esc(r.name)}</h3>
-                        <div class="meta">
-                            ${r.servings ? `<span>🍽 ${r.servings} port.</span>` : ''}
-                            ${r.prep_time_minutes ? `<span>⏱ ${r.prep_time_minutes} min</span>` : ''}
-                        </div>
-                        <p>${esc(r.description || '')}</p>
-                    </a>
-                `).join('');
-
-            } catch {
-                el.innerHTML = `<div class="empty-state"><p>Kunde inte ladda recept.</p></div>`;
-            }
-        }
-
-        const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        load();
-    </script>
+    <script src="js/index.js"></script>
 </body>
 
 </html>

@@ -8,15 +8,15 @@
     <meta name="description" content="Skapa ett nytt recept i din receptsamling">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
     <nav>
-        <a href="/" class="nav-brand">🍳 Receptsamling</a>
+        <a href="index.html" class="nav-brand">🍳 Receptsamling</a>
         <div class="nav-links">
-            <a href="view.html">Alla recept</a>
-            <a href="create.html" class="active">Skapa recept</a>
+            <a href="index.html">Recept</a>
+            <a href="create.html" class="active">Skapa</a>
         </div>
     </nav>
 
@@ -34,12 +34,11 @@
                 <label for="recipe-description">Beskrivning</label>
                 <textarea id="recipe-description" placeholder="Kort beskrivning av rätten…"></textarea>
             </div>
-            <div class="row-3">
+            <div class="two-col">
                 <div class="field">
                     <label for="recipe-servings">Portioner</label>
                     <input type="number" id="recipe-servings" placeholder="4" min="1">
                 </div>
-                <div></div>
                 <div class="field">
                     <label for="recipe-preptime">Tillagningstid (min)</label>
                     <input type="number" id="recipe-preptime" placeholder="30" min="1">
@@ -60,7 +59,7 @@
 
         <div class="form-actions">
             <button class="btn btn-primary" id="save-btn">💾 Spara recept</button>
-            <a href="view.html" class="btn btn-ghost">Avbryt</a>
+            <a href="index.html" class="btn btn-ghost">Avbryt</a>
         </div>
     </div>
 
@@ -264,7 +263,7 @@
                 if (!res.ok) throw new Error(await res.text());
 
                 showToast('✅ Recept sparat!');
-                setTimeout(() => window.location.href = 'view.html', 1500);
+                setTimeout(() => window.location.href = 'index.html', 1500);
 
             } catch (err) {
                 console.error(err);

@@ -105,6 +105,40 @@ app.get('/recipes', async (req, res) => {
     }
 });
 
+/* ---------- GET SINGLE RECIPE ---------- */
+app.get('/recipes/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const recipeResult = await db.query(`
+            SELECT id, name, description, servings, prep_time_minutes
+            FROM recipe
+            WHERE id = $1
+        `, [id]);
+
+        if (recipeResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Recipe not found' });
+        }
+
+        const recipe = recipeResult.rows[0];
+
+        const ingredients = await db.query(`
+            SELECT i.name AS ingredient_name, ri.amount, u.abbreviation AS unit
+            FROM recipe_ingredient ri
+            JOIN ingredient i ON i.id = ri.ingredient_id
+            JOIN unit u ON u.id = ri.unit_id
+            WHERE ri.recipe_id = $1
+            ORDER BY i.name
+        `, [id]);
+
+        res.json({ ...recipe, ingredients: ingredients.rows });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
 /* ---------- CREATE RECIPE ---------- */
 app.post('/recipes', async (req, res) => {
     const { name, description, servings, prep_time_minutes, ingredients } = req.body;

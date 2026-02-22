@@ -26,7 +26,9 @@ html {
     --success: #2d6a4f;
     --success-hover: #1b4332;
     --font: 'Inter', sans-serif;
+    --radius-sm: 6px;
     --radius: 10px;
+    --radius-lg: 16px;
     --shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 

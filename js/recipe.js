@@ -17,14 +17,24 @@ async function load() {
 
         document.title = `${r.name} - Receptsamling`;
 
-        el.className = '';
+        el.className = 'recipe-detail';
         el.innerHTML = `
-            <h1>${esc(r.name)}</h1>
-            <div class="meta">
+            ${r.image_url ? `<div class="hero-image" style="margin-bottom: 1.5rem;"><img src="${API}${r.image_url}" style="width:100%; height:300px; object-fit:cover; border-radius:12px; box-shadow:var(--shadow);"></div>` : ''}
+            
+            <div id="category-chips" class="chip-group" style="margin-bottom: 0.5rem; gap: 0.4rem;">
+                ${(r.categories || []).map(c => `<span class="chip">${esc(c.name)}</span>`).join('')}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem;">
+                <h1 style="margin: 0;">${esc(r.name)}</h1>
+                <a href="edit.html?id=${r.id}" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.82rem; flex-shrink: 0;">✏️ Ändra</a>
+            </div>
+
+            <div class="meta" style="margin-bottom: 1.5rem;">
                 ${r.servings ? `<span>🍽 ${r.servings} portioner</span>` : ''}
                 ${r.prep_time_minutes ? `<span>⏱ ${r.prep_time_minutes} min</span>` : ''}
             </div>
-            ${r.description ? `<p class="recipe-description">${esc(r.description)}</p>` : ''}
+            ${r.description ? `<p class="recipe-description" style="font-size: 1.05rem; margin-bottom: 2rem;">${esc(r.description)}</p>` : ''}
 
             <div class="detail-section">
                 <h2>Ingredienser</h2>
@@ -37,9 +47,24 @@ async function load() {
                     `).join('')}
                 </ul>
             </div>
+
+            ${r.steps && r.steps.length > 0 ? `
+                <div class="detail-section" style="margin-top: 1.5rem;">
+                    <h2>Gör så här</h2>
+                    <div class="instruction-list-view" style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1rem;">
+                        ${r.steps.map(s => `
+                            <div style="display: flex; gap: 1rem;">
+                                <div class="step-number" style="background: var(--accent); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;">${s.step_number}</div>
+                                <div style="font-size: 1rem; line-height: 1.6;">${esc(s.instruction)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
         `;
 
-    } catch {
+    } catch (err) {
+        console.error(err);
         el.innerHTML = `<div class="empty-state"><p>Receptet hittades inte.</p></div>`;
     }
 }

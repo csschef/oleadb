@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skapa recept – Receptsamling</title>
-    <meta name="description" content="Skapa ett nytt recept i din receptsamling">
+    <title>Ändra recept – Receptsamling</title>
+    <meta name="description" content="Ändra ett befintligt recept">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/general.css">
@@ -17,13 +17,13 @@
         <a href="index.html" class="nav-brand">🍳 Receptsamling</a>
         <div class="nav-links">
             <a href="index.html">Recept</a>
-            <a href="create.html" class="active">Skapa</a>
+            <a href="create.html">Skapa</a>
         </div>
     </nav>
 
     <div class="container container-sm">
         <header class="page-header">
-            <h1>Skapa nytt recept</h1>
+            <h1 id="page-title">Ändra recept</h1>
         </header>
 
         <form id="recipe-form" onsubmit="return false;">
@@ -35,7 +35,7 @@
                     <div id="image-preview-container" class="image-preview-container">
                         <div class="upload-placeholder">
                             <span class="icon">📸</span>
-                            <p>Klicka eller dra en bild hit</p>
+                            <p>Klicka eller dra en ny bild hit för att byta</p>
                         </div>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
                 <h2>Om receptet</h2>
                 <div class="field">
                     <label for="recipe-name">Namn</label>
-                    <input type="text" id="recipe-name" placeholder="T.ex. Farmors Köttbullar" required autofocus>
+                    <input type="text" id="recipe-name" placeholder="Laddar…" required autofocus>
                 </div>
                 <div class="field">
                     <label for="recipe-description">Beskrivning</label>
@@ -96,16 +96,16 @@
 
             <div class="form-actions">
                 <button type="button" class="btn btn-primary btn-lg" id="save-btn" style="flex: 1;">
-                    💾 Spara recept
+                    💾 Spara ändringar
                 </button>
-                <a href="index.html" class="btn btn-ghost">Avbryt</a>
+                <a id="cancel-btn" href="index.html" class="btn btn-ghost">Avbryt</a>
             </div>
         </form>
     </div>
 
     <div class="toast" id="toast"></div>
 
-    <script src="js/create.js"></script>
+    <script src="js/edit.js"></script>
 </body>
 
 </html>

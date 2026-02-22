@@ -243,3 +243,53 @@ select {
     color: var(--text-muted);
     font-size: 0.9rem;
 }
+
+/* ── CHIPS ── */
+.chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.8rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+.chip-interactive {
+    cursor: pointer;
+}
+
+.chip-interactive:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-light);
+}
+
+.chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(204, 76, 25, 0.2);
+}
+
+.chip-remove {
+    font-size: 1.1rem;
+    line-height: 1;
+    margin-left: 1px;
+    opacity: 0.7;
+}
+
+.chip-remove:hover {
+    opacity: 1;
+}

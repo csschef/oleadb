@@ -140,7 +140,7 @@ function renderRecipes(recipes, append) {
                 <button onclick="clearAll()" class="btn btn-ghost">Rensa alla filter</button>
             </div>`;
         loadMoreContainer.style.display = 'none';
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
     }
 
@@ -179,7 +179,7 @@ function renderRecipes(recipes, append) {
         loadMoreContainer.style.display = 'none';
     }
 
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 async function loadMore() {

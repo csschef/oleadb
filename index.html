@@ -57,10 +57,11 @@
         </div>
     </div>
 
-    <script src="js/index.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/index.js"></script>
     <script>
-        lucide.createIcons();
+        // Initial setup for static icons
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     </script>
 </body>
 

@@ -370,6 +370,19 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
     }
 });
 
+/* ---------- DELETE RECIPE ---------- */
+app.delete('/recipes/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await db.query('DELETE FROM recipe WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
 /* ---------- START SERVER ---------- */
 app.listen(3000, () => {
     console.log('API running on http://localhost:3000');

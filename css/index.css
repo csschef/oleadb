@@ -20,9 +20,13 @@
 .search-icon {
     position: absolute;
     left: 0.85rem;
-    font-size: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
     opacity: 0.5;
     pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #search-input {

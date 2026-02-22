@@ -172,17 +172,7 @@ async function load() {
                 ${(r.categories || []).map(c => `<span class="chip-mini">${esc(c.name)}</span>`).join('')}
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem;">
-                <h1 style="margin: 0;">${esc(r.name)}</h1>
-                <div id="recipe-actions-area" class="recipe-actions" style="flex-shrink: 0;">
-                    <a href="edit.html?id=${r.id}" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.82rem; display: flex; align-items: center; gap: 4px;">
-                        <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Ändra
-                    </a>
-                    <button onclick="showDeleteConfirm()" class="btn btn-ghost btn-delete" style="padding: 0.4rem; font-size: 0.82rem; min-width: 36px;" title="Radera recept">
-                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                    </button>
-                </div>
-            </div>
+            <h1 style="margin-bottom: 0.5rem;">${esc(r.name)}</h1>
 
             <div class="meta" style="margin-bottom: 1.5rem;">
                 <div class="servings-control">
@@ -205,6 +195,7 @@ async function load() {
             </div>
         `;
 
+        renderActions();
         renderSteps();
 
     } catch (err) {
@@ -231,10 +222,10 @@ function renderActions() {
     if (!area || !currentRecipe) return;
 
     area.innerHTML = `
-        <a href="edit.html?id=${currentRecipe.id}" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.82rem; display: flex; align-items: center; gap: 4px;">
+        <a href="edit.html?id=${currentRecipe.id}" class="btn btn-ghost">
             <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Ändra
         </a>
-        <button onclick="showDeleteConfirm()" class="btn btn-ghost btn-delete" style="padding: 0.4rem; font-size: 0.82rem; min-width: 36px;" title="Radera recept">
+        <button onclick="showDeleteConfirm()" class="btn btn-ghost btn-delete" title="Radera recept">
             <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
         </button>
     `;

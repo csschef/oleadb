@@ -6,8 +6,15 @@
     font-size: 0.88rem;
     color: var(--text-muted);
     text-decoration: none;
-    margin-bottom: 1.5rem;
     font-weight: 500;
+}
+
+.top-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
 }
 
 .back-link:hover {
@@ -129,8 +136,19 @@
     align-items: center !important;
 }
 
+.recipe-actions .btn {
+    height: 36px !important;
+    padding: 0 0.8rem !important;
+    font-size: 0.82rem !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
 .btn-delete {
     color: var(--text-muted);
+    min-width: 36px;
+    padding: 0 !important;
+    /* Square for icon-only */
 }
 
 .btn-delete:hover {

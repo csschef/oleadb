@@ -97,12 +97,10 @@ function renderSteps() {
     if (!container || !currentRecipe) return;
 
     let html = currentRecipe.steps.map((step, idx) => `
-        <div class="step-card" style="margin-bottom: 2rem;">
+        <div class="step-card">
             ${step.ingredients && step.ingredients.length > 0 ? `
-                <div class="step-ingredients" style="margin-bottom: 1.25rem;">
-                    <h4 style="margin-bottom: 0.75rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
-                        Ingredienser: ${step.title ? esc(step.title) : ''}
-                    </h4>
+                <div class="step-ingredients">
+                    <h4>Ingredienser: ${step.title ? esc(step.title) : ''}</h4>
                     <ul class="ingredient-list-detail">
                         ${step.ingredients.map(i => `
                             <li>
@@ -112,17 +110,15 @@ function renderSteps() {
                         `).join('')}
                     </ul>
                 </div>
-            ` : (step.title ? `<h3 class="step-title" style="margin-bottom: 0.75rem; color: var(--accent); font-size: 1.1rem;">${esc(step.title)}</h3>` : '')}
+            ` : (step.title ? `<div class="step-instructions" style="padding-bottom: 0;"><h3 class="step-title" style="margin-bottom: 0.5rem; color: var(--accent); font-size: 1.2rem;">${esc(step.title)}</h3></div>` : '')}
 
             ${step.instructions ? `
                 <div class="step-instructions">
-                    <h4 style="margin-bottom: 0.75rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
-                        Gör såhär:
-                    </h4>
+                    <h4>Gör såhär:</h4>
                     ${step.instructions.split('\n').map((line, lIdx) => `
-                        <div class="instruction-line" style="display: flex; gap: 1rem; margin-bottom: 0.75rem;">
-                            <div class="step-number" style="background: var(--accent); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;">${lIdx + 1}</div>
-                            <div style="font-size: 0.98rem; line-height: 1.5; color: var(--text);">${esc(line)}</div>
+                        <div class="instruction-line">
+                            <div class="step-number">${lIdx + 1}</div>
+                            <div class="instruction-text">${esc(line)}</div>
                         </div>
                     `).join('')}
                 </div>

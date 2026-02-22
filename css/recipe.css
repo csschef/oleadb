@@ -40,7 +40,7 @@
     display: flex;
     align-items: center;
     gap: 0.1rem;
-    background: var(--surface2);
+    background: #fdfcfb;
     border: 1px solid var(--border);
     border-radius: 999px;
     padding: 0.15rem;
@@ -84,16 +84,44 @@
 }
 
 
-.detail-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
+.recipe-description {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
 }
 
-.detail-section h2 {
-    margin-bottom: 0.8rem;
+/* ── STEP & INGREDIENT CARDS ── */
+.step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.step-ingredients {
+    background: #fdfcfb;
+    /* Even lighter warm tone */
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem;
+    margin-bottom: 0;
+}
+
+.step-instructions {
+    padding: 1.5rem;
+}
+
+.step-ingredients h4,
+.step-instructions h4 {
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
 }
 
 .ingredient-list-detail {
@@ -106,7 +134,7 @@
 .ingredient-list-detail li {
     font-size: 0.95rem;
     padding: 0.45rem 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
@@ -123,10 +151,36 @@
     font-size: 0.9rem;
 }
 
-.recipe-description {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 1.5rem;
+.instruction-line {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.instruction-line:last-child {
+    margin-bottom: 0;
+}
+
+.step-number {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.instruction-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text);
 }
 
 /* ── ACTION BUTTONS ── */

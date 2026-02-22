@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recept – Receptsamling</title>
+    <title>Recept - GastroDB</title>
     <meta name="description" content="Receptdetaljer">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,18 +14,22 @@
 
 <body>
     <nav>
-        <a href="index.html" class="nav-brand">🍳 Receptsamling</a>
-        <div class="nav-links">
-            <a href="index.html">Recept</a>
-            <a href="create.html">Skapa</a>
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand"><i data-lucide="cooking-pot"></i> GastroDB</a>
+            <div class="nav-links">
+                <a href="index.html">Recept</a>
+                <a href="create.html">Skapa</a>
+            </div>
         </div>
     </nav>
 
-    <div class="container container-sm">
-        <a href="index.html" class="back-link">← Tillbaka till alla recept</a>
+    <div class="container">
+        <a href="index.html" class="back-link"><i data-lucide="arrow-left"
+                style="width: 16px; height: 16px; margin-right: 4px;"></i> Tillbaka till alla recept</a>
         <div id="content" class="loading">Laddar…</div>
     </div>
 
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="js/recipe.js"></script>
 </body>
 

@@ -1,4 +1,8 @@
 /* ── RESET & BASE ── */
+html {
+    scrollbar-gutter: stable;
+}
+
 *,
 *::before,
 *::after {
@@ -19,6 +23,8 @@
     --text-muted: #6b6560;
     --danger: #c0392b;
     --danger-light: #fdecea;
+    --success: #2d6a4f;
+    --success-hover: #1b4332;
     --font: 'Inter', sans-serif;
     --radius: 10px;
     --shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
@@ -37,14 +43,20 @@ body {
 nav {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 0 1rem;
     height: 56px;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
     position: sticky;
     top: 0;
     z-index: 100;
+}
+
+.nav-container {
+    max-width: 680px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 1rem;
 }
 
 .nav-brand {
@@ -78,13 +90,21 @@ nav {
 }
 
 @media (min-width: 600px) {
-    .container {
-        padding: 2rem 1.5rem;
+
+    .container,
+    .nav-container {
         max-width: 800px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
 
     nav {
-        padding: 0 1.5rem;
+        padding: 0;
     }
 }
 
@@ -167,6 +187,15 @@ select {
 
 .btn-primary:hover {
     background: var(--accent-hover);
+}
+
+.btn-success {
+    background: var(--success);
+    color: #fff;
+}
+
+.btn-success:hover {
+    background: var(--success-hover);
 }
 
 .btn-ghost {
@@ -264,6 +293,18 @@ select {
     color: var(--text-muted);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
+}
+
+.chip-mini {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.6rem;
+    background: var(--accent-light);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--accent);
+    font-weight: 600;
 }
 
 .chip-interactive {

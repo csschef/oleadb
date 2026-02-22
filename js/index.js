@@ -86,12 +86,21 @@ function updateUIStates() {
     if (clearSearchBtn) clearSearchBtn.style.display = searchInput.value ? 'block' : 'none';
 }
 
-async function load() {
+let offset = 0;
+const LIMIT = 12;
+
+async function load(append = false) {
     const el = document.getElementById('content');
+    const loadMoreContainer = document.getElementById('load-more-container');
     const q = document.getElementById('search-input').value;
 
+    if (!append) {
+        offset = 0;
+        el.innerHTML = '<div class="loading">Laddar…</div>';
+    }
+
     try {
-        let url = `${API}/recipes?q=${encodeURIComponent(q)}`;
+        let url = `${API}/recipes?q=${encodeURIComponent(q)}&limit=${LIMIT}&offset=${offset}`;
         if (selectedCategories.length > 0) {
             url += `&categories=${selectedCategories.join(',')}`;
         }
@@ -99,19 +108,25 @@ async function load() {
         const res = await fetch(url);
         const recipes = await res.json();
 
-        if (!recipes.length) {
+        if (!append && !recipes.length) {
             el.className = '';
             el.innerHTML = `
                 <div class="empty-state">
-                    <div class="icon">🍽️</div>
+                    <div class="icon"><i data-lucide="utensils" style="width: 48px; height: 48px; opacity: 0.2;"></i></div>
                     <p>Inga recept matchar din sökning.</p><br>
                     <button onclick="clearAll()" class="btn btn-ghost">Rensa alla filter</button>
                 </div>`;
+            loadMoreContainer.style.display = 'none';
+            lucide.createIcons();
             return;
         }
 
-        el.className = 'recipe-grid';
-        el.innerHTML = recipes.map(r => `
+        if (!append) {
+            el.className = 'recipe-grid';
+            el.innerHTML = '';
+        }
+
+        const html = recipes.map(r => `
             <a class="recipe-card" href="recipe.html?id=${r.id}">
                 ${r.image_url ? `
                     <div class="recipe-card-image">
@@ -121,8 +136,8 @@ async function load() {
                 <div class="recipe-card-content">
                     <h3>${esc(r.name)}</h3>
                     <div class="meta">
-                        ${r.servings ? `<span>🍽 ${r.servings} port.</span>` : ''}
-                        ${r.prep_time_minutes ? `<span>⏱ ${r.prep_time_minutes} min</span>` : ''}
+                        ${r.servings ? `<span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="users" style="width: 14px; height: 14px;"></i> ${r.servings} port.</span>` : ''}
+                        ${r.prep_time_minutes ? `<span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> ${r.prep_time_minutes} min</span>` : ''}
                     </div>
                     <div class="chip-group-mini">
                         ${(r.categories || []).map(c => `<span class="chip-mini">${esc(c.name)}</span>`).join('')}
@@ -132,15 +147,42 @@ async function load() {
             </a>
         `).join('');
 
+        el.insertAdjacentHTML('beforeend', html);
+
+        // Show/hide load more button
+        if (recipes.length === LIMIT) {
+            loadMoreContainer.style.display = 'flex';
+        } else {
+            loadMoreContainer.style.display = 'none';
+        }
+
+        lucide.createIcons();
+
     } catch (err) {
         console.error(err);
-        el.innerHTML = `<div class="empty-state"><p>Kunde inte ladda recept.</p></div>`;
+        if (!append) {
+            el.innerHTML = `<div class="empty-state"><p>Kunde inte ladda recept.</p></div>`;
+        }
     }
+}
+
+async function loadMore() {
+    offset += LIMIT;
+    const btn = document.getElementById('load-more-btn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Laddar…';
+
+    await load(true);
+
+    btn.disabled = false;
+    btn.textContent = originalText;
 }
 
 function clearAll() {
     document.getElementById('search-input').value = '';
     selectedCategories = [];
+    offset = 0;
     renderActiveChips();
     updateUIStates();
     load();
@@ -150,16 +192,21 @@ const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 
 window.toggleCategory = toggleCategory;
 window.clearAll = clearAll;
+window.loadMore = loadMore;
 
 document.getElementById('search-input').addEventListener('input', () => {
     updateUIStates();
     clearTimeout(window.searchTimeout);
-    window.searchTimeout = setTimeout(load, 300);
+    window.searchTimeout = setTimeout(() => {
+        offset = 0;
+        load();
+    }, 300);
 });
 
 document.getElementById('clear-search').addEventListener('click', () => {
     document.getElementById('search-input').value = '';
     updateUIStates();
+    offset = 0;
     load();
 });
 
@@ -171,8 +218,11 @@ document.getElementById('clear-filters').addEventListener('click', () => {
     selectedCategories = [];
     renderActiveChips();
     updateUIStates();
+    offset = 0;
     load();
 });
+
+document.getElementById('load-more-btn').addEventListener('click', loadMore);
 
 loadCategories();
 load();

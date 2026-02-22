@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ändra recept – Receptsamling</title>
+    <title>Ändra recept - GastroDB</title>
     <meta name="description" content="Ändra ett befintligt recept">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,14 +14,16 @@
 
 <body>
     <nav>
-        <a href="index.html" class="nav-brand">🍳 Receptsamling</a>
-        <div class="nav-links">
-            <a href="index.html">Recept</a>
-            <a href="create.html">Skapa</a>
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand"><i data-lucide="cooking-pot"></i> GastroDB</a>
+            <div class="nav-links">
+                <a href="index.html">Recept</a>
+                <a href="create.html">Skapa</a>
+            </div>
         </div>
     </nav>
 
-    <div class="container container-sm">
+    <div class="container">
         <header class="page-header">
             <h1 id="page-title">Ändra recept</h1>
         </header>
@@ -72,31 +74,22 @@
                 </div>
             </div>
 
-            <!-- INGREDIENTS -->
+            <!-- STEPS & INGREDIENTS -->
             <div class="form-section">
-                <h2>Ingredienser</h2>
-                <div id="ingredient-list" class="ingredient-list">
-                    <!-- Rows added via JS -->
+                <h2>Steg & Ingredienser</h2>
+                <div id="steps-container" class="steps-container">
+                    <!-- Steps with nested ingredients added via JS -->
                 </div>
-                <button type="button" class="btn btn-ghost" id="add-row-btn" style="margin-top: 1rem; width: 100%;">
-                    ➕ Lägg till ingrediens
-                </button>
-            </div>
-
-            <!-- INSTRUCTIONS -->
-            <div class="form-section">
-                <h2>Instruktioner</h2>
-                <div id="instruction-list" class="instruction-list">
-                    <!-- Rows added via JS -->
-                </div>
-                <button type="button" class="btn btn-ghost" id="add-step-btn" style="margin-top: 1rem; width: 100%;">
-                    ➕ Lägg till steg
+                <button type="button" id="add-step-btn" class="btn btn-ghost"
+                    style="width: 100%; margin-bottom: 2rem; border: 2px dashed var(--border);">
+                    <i data-lucide="plus" style="width: 18px; height: 18px;"></i> Lägg till nytt steg
                 </button>
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn btn-primary btn-lg" id="save-btn" style="flex: 1;">
-                    💾 Spara ändringar
+                <button type="button" class="btn btn-success btn-lg" id="save-btn"
+                    style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="save" style="width: 20px; height: 20px;"></i> Spara ändringar
                 </button>
                 <a id="cancel-btn" href="index.html" class="btn btn-ghost">Avbryt</a>
             </div>
@@ -105,6 +98,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="js/edit.js"></script>
 </body>
 

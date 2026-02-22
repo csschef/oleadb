@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receptsamling</title>
+    <title>GastroDB</title>
     <meta name="description" content="Bläddra bland alla sparade recept">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,10 +14,12 @@
 
 <body>
     <nav>
-        <a href="index.html" class="nav-brand">🍳 Receptsamling</a>
-        <div class="nav-links">
-            <a href="index.html" class="active">Recept</a>
-            <a href="create.html">Skapa</a>
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand"><i data-lucide="cooking-pot"></i> GastroDB</a>
+            <div class="nav-links">
+                <a href="index.html" class="active">Recept</a>
+                <a href="create.html">Skapa</a>
+            </div>
         </div>
     </nav>
 
@@ -26,11 +28,13 @@
             <h1>Recept</h1>
             <div class="search-section">
                 <div class="search-wrapper">
-                    <span class="search-icon">🔍</span>
+                    <span class="search-icon"><i data-lucide="search" style="width: 18px; height: 18px;"></i></span>
                     <input type="text" id="search-input" placeholder="Sök efter recept…" autocomplete="off">
-                    <button id="clear-search" class="btn-clear" title="Rensa sökning" style="display: none;">✕</button>
+                    <button id="clear-search" class="btn-clear" title="Rensa sökning" style="display: none;">
+                        <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                    </button>
                     <button id="filter-toggle" class="btn-filter" title="Filtrera">
-                        <span class="filter-icon">⚙️</span>
+                        <i data-lucide="sliders-horizontal" style="width: 18px; height: 18px;"></i>
                         <span class="filter-badge" id="filter-count" style="display: none;">0</span>
                     </button>
                 </div>
@@ -48,9 +52,16 @@
         </div>
 
         <div id="content" class="loading">Laddar…</div>
+        <div id="load-more-container" class="load-more-container" style="display: none;">
+            <button id="load-more-btn" class="btn btn-ghost btn-load-more">Ladda fler recept</button>
+        </div>
     </div>
 
     <script src="js/index.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 
 </html>

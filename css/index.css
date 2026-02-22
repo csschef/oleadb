@@ -8,6 +8,7 @@
 
 .search-section {
     margin-bottom: 1.5rem;
+    position: relative;
 }
 
 .search-wrapper {
@@ -32,6 +33,7 @@
     font-size: 1rem;
     background: var(--surface2);
     border: 1px solid var(--border);
+    border-radius: 999px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -66,7 +68,7 @@
     right: 0.5rem;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 50%;
     width: 36px;
     height: 36px;
     display: flex;
@@ -108,13 +110,18 @@
 
 .filter-panel {
     display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 150;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 12px 12px;
+    border-radius: 12px;
     padding: 1.25rem;
+    margin-top: 0.5rem;
     animation: slideDown 0.25s cubic-bezier(0, 0, 0.2, 1);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
 }
 
 .filter-panel.open {
@@ -262,15 +269,7 @@
     margin-bottom: 0.5rem;
 }
 
-.chip-mini {
-    font-size: 0.65rem;
-    padding: 0.15rem 0.45rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text-muted);
-    font-weight: 500;
-}
+/* .chip-mini is now in general.css */
 
 .recipe-description-short {
     font-size: 0.85rem;
@@ -281,4 +280,19 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.4;
+}
+
+/* ── LOAD MORE ── */
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.btn-load-more {
+    padding: 0.8rem 2.5rem;
+    font-size: 0.95rem;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }

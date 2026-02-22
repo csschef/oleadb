@@ -97,9 +97,8 @@ app.get('/categories', async (req, res) => {
     }
 });
 
-/* ---------- GET ALL RECIPES ---------- */
 app.get('/recipes', async (req, res) => {
-    const { q, categories } = req.query; // categories should be a comma-separated list of IDs
+    const { q, categories, limit = 12, offset = 0 } = req.query;
     let query = `
         SELECT DISTINCT r.id, r.name, r.description, r.servings, r.prep_time_minutes, r.image_url, r.created_at
         FROM recipe r
@@ -114,7 +113,7 @@ app.get('/recipes', async (req, res) => {
     }
 
     if (categories) {
-        const catList = categories.split(',').map(id => parseInt(id));
+        const catList = categories.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
         catList.forEach(id => {
             params.push(id);
             query += ` AND r.id IN (SELECT recipe_id FROM recipe_category_map WHERE category_id = $${params.length})`;
@@ -122,6 +121,12 @@ app.get('/recipes', async (req, res) => {
     }
 
     query += ` ORDER BY r.created_at DESC`;
+
+    // Add Pagination
+    params.push(parseInt(limit));
+    query += ` LIMIT $${params.length}`;
+    params.push(parseInt(offset));
+    query += ` OFFSET $${params.length}`;
 
     try {
         const recipes = await db.query(query, params);
@@ -163,23 +168,26 @@ app.get('/recipes/:id', async (req, res) => {
 
         const recipe = recipeResult.rows[0];
 
-        // Fetch ingredients
-        const ingredients = await db.query(`
-            SELECT i.name AS ingredient_name, ri.amount, u.abbreviation AS unit, ri.ingredient_id, ri.unit_id
-            FROM recipe_ingredient ri
-            JOIN ingredient i ON i.id = ri.ingredient_id
-            JOIN unit u ON u.id = ri.unit_id
-            WHERE ri.recipe_id = $1
-            ORDER BY i.name
+        // Fetch hierarchical steps and their ingredients
+        const stepsResult = await db.query(`
+            SELECT id, title, instructions, sort_order
+            FROM recipe_steps
+            WHERE recipe_id = $1
+            ORDER BY sort_order
         `, [id]);
 
-        // Fetch instructions/steps
-        const steps = await db.query(`
-            SELECT step_number, instruction
-            FROM recipe_step
-            WHERE recipe_id = $1
-            ORDER BY step_number
-        `, [id]);
+        const steps = await Promise.all(stepsResult.rows.map(async (step) => {
+            const ingredients = await db.query(`
+                SELECT ingredient_name, amount, unit, sort_order
+                FROM recipe_step_ingredients
+                WHERE recipe_step_id = $1
+                ORDER BY sort_order
+            `, [step.id]);
+            return {
+                ...step,
+                ingredients: ingredients.rows
+            };
+        }));
 
         // Fetch categories
         const recipeCategories = await db.query(`
@@ -191,8 +199,7 @@ app.get('/recipes/:id', async (req, res) => {
 
         res.json({
             ...recipe,
-            ingredients: ingredients.rows,
-            steps: steps.rows,
+            steps: steps,
             categories: recipeCategories.rows
         });
 
@@ -205,18 +212,17 @@ app.get('/recipes/:id', async (req, res) => {
 /* ---------- CREATE RECIPE ---------- */
 app.post('/recipes', upload.single('image'), async (req, res) => {
     // When using multer + FormData, JSON fields might be sent as strings
-    let { name, description, servings, prep_time_minutes, ingredients, categories, steps } = req.body;
+    let { name, description, servings, prep_time_minutes, categories, steps } = req.body;
 
     try {
-        if (typeof ingredients === 'string') ingredients = JSON.parse(ingredients);
         if (typeof categories === 'string') categories = JSON.parse(categories);
         if (typeof steps === 'string') steps = JSON.parse(steps);
     } catch (e) {
         return res.status(400).json({ error: 'Invalid data format' });
     }
 
-    if (!name || !ingredients || ingredients.length === 0) {
-        return res.status(400).json({ error: 'Name and at least one ingredient required' });
+    if (!name || !steps || steps.length === 0) {
+        return res.status(400).json({ error: 'Name and at least one step required' });
     }
 
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -234,15 +240,7 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
 
         const recipeId = recipeResult.rows[0].id;
 
-        // 2. Insert Ingredients
-        for (const ing of ingredients) {
-            await client.query(`
-                INSERT INTO recipe_ingredient (recipe_id, ingredient_id, amount, unit_id)
-                VALUES ($1, $2, $3, $4)
-            `, [recipeId, ing.ingredient_id, ing.amount, ing.unit_id]);
-        }
-
-        // 3. Insert Category Maps
+        // 2. Insert Category Maps
         if (categories && categories.length > 0) {
             for (const catId of categories) {
                 await client.query(`
@@ -252,14 +250,27 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
             }
         }
 
-        // 4. Insert Steps
+        // 3. Insert Steps and their Ingredients
         if (steps && steps.length > 0) {
-            for (const stepText of steps) {
-                // step_number is handled by the DB trigger provided by the user
-                await client.query(`
-                    INSERT INTO recipe_step (recipe_id, instruction)
-                    VALUES ($1, $2)
-                `, [recipeId, stepText]);
+            for (let i = 0; i < steps.length; i++) {
+                const s = steps[i];
+                const stepResult = await client.query(`
+                    INSERT INTO recipe_steps (recipe_id, title, instructions, sort_order)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING id
+                `, [recipeId, s.title || null, s.instructions || null, i + 1]);
+
+                const stepId = stepResult.rows[0].id;
+
+                if (s.ingredients && s.ingredients.length > 0) {
+                    for (let j = 0; j < s.ingredients.length; j++) {
+                        const ing = s.ingredients[j];
+                        await client.query(`
+                            INSERT INTO recipe_step_ingredients (recipe_step_id, ingredient_name, amount, unit, sort_order)
+                            VALUES ($1, $2, $3, $4, $5)
+                        `, [stepId, ing.name, ing.amount || null, ing.unit || null, j + 1]);
+                    }
+                }
             }
         }
 
@@ -278,18 +289,17 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
 /* ---------- UPDATE RECIPE ---------- */
 app.put('/recipes/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
-    let { name, description, servings, prep_time_minutes, ingredients, categories, steps } = req.body;
+    let { name, description, servings, prep_time_minutes, categories, steps } = req.body;
 
     try {
-        if (typeof ingredients === 'string') ingredients = JSON.parse(ingredients);
         if (typeof categories === 'string') categories = JSON.parse(categories);
         if (typeof steps === 'string') steps = JSON.parse(steps);
     } catch (e) {
         return res.status(400).json({ error: 'Invalid data format' });
     }
 
-    if (!name || !ingredients || ingredients.length === 0) {
-        return res.status(400).json({ error: 'Name and at least one ingredient required' });
+    if (!name || !steps || steps.length === 0) {
+        return res.status(400).json({ error: 'Name and at least one step required' });
     }
 
     const client = await db.connect();
@@ -312,16 +322,7 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
         updateQuery += ` WHERE id = $${params.length}`;
         await client.query(updateQuery, params);
 
-        // 2. Sync Ingredients (Delete all, re-insert)
-        await client.query('DELETE FROM recipe_ingredient WHERE recipe_id = $1', [id]);
-        for (const ing of ingredients) {
-            await client.query(`
-                INSERT INTO recipe_ingredient (recipe_id, ingredient_id, amount, unit_id)
-                VALUES ($1, $2, $3, $4)
-            `, [id, ing.ingredient_id, ing.amount, ing.unit_id]);
-        }
-
-        // 3. Sync Categories
+        // 2. Sync Categories
         await client.query('DELETE FROM recipe_category_map WHERE recipe_id = $1', [id]);
         if (categories && categories.length > 0) {
             for (const catId of categories) {
@@ -332,14 +333,28 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
             }
         }
 
-        // 4. Sync Steps
-        await client.query('DELETE FROM recipe_step WHERE recipe_id = $1', [id]);
+        // 3. Sync Steps and Ingredients (Delete all steps, which casades to step_ingredients)
+        await client.query('DELETE FROM recipe_steps WHERE recipe_id = $1', [id]);
         if (steps && steps.length > 0) {
-            for (const stepText of steps) {
-                await client.query(`
-                    INSERT INTO recipe_step (recipe_id, instruction)
-                    VALUES ($1, $2)
-                `, [id, stepText]);
+            for (let i = 0; i < steps.length; i++) {
+                const s = steps[i];
+                const stepResult = await client.query(`
+                    INSERT INTO recipe_steps (recipe_id, title, instructions, sort_order)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING id
+                `, [id, s.title || null, s.instructions || null, i + 1]);
+
+                const stepId = stepResult.rows[0].id;
+
+                if (s.ingredients && s.ingredients.length > 0) {
+                    for (let j = 0; j < s.ingredients.length; j++) {
+                        const ing = s.ingredients[j];
+                        await client.query(`
+                            INSERT INTO recipe_step_ingredients (recipe_step_id, ingredient_name, amount, unit, sort_order)
+                            VALUES ($1, $2, $3, $4, $5)
+                        `, [stepId, ing.name, ing.amount || null, ing.unit || null, j + 1]);
+                    }
+                }
             }
         }
 

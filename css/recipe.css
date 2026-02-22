@@ -23,10 +23,59 @@
     font-size: 0.85rem;
     color: var(--text-muted);
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    gap: 1.25rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
 }
+
+.servings-control {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem;
+}
+
+.servings-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.servings-btn:hover {
+    background: var(--accent-light);
+}
+
+.servings-btn:active {
+    transform: scale(0.9);
+}
+
+.servings-text {
+    padding: 0 0.4rem;
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.88rem;
+    user-select: none;
+}
+
+#servings-display {
+    color: var(--accent);
+    margin-right: 0.1rem;
+}
+
 
 .detail-section {
     background: var(--surface);

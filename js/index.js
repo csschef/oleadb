@@ -99,71 +99,87 @@ async function load(append = false) {
         el.innerHTML = '<div class="loading">Laddar…</div>';
     }
 
-    try {
-        let url = `${API}/recipes?q=${encodeURIComponent(q)}&limit=${LIMIT}&offset=${offset}`;
-        if (selectedCategories.length > 0) {
-            url += `&categories=${selectedCategories.join(',')}`;
-        }
+    let url = `${API}/recipes?q=${encodeURIComponent(q)}&limit=${LIMIT}&offset=${offset}`;
+    if (selectedCategories.length > 0) {
+        url += `&categories=${selectedCategories.join(',')}`;
+    }
 
+    const cacheKey = `recipes_cache_${url}`;
+
+    try {
         const res = await fetch(url);
+        if (!res.ok) throw new Error('Fetch failed');
         const recipes = await res.json();
 
-        if (!append && !recipes.length) {
-            el.className = '';
-            el.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon"><i data-lucide="utensils" style="width: 48px; height: 48px; opacity: 0.2;"></i></div>
-                    <p>Inga recept matchar din sökning.</p><br>
-                    <button onclick="clearAll()" class="btn btn-ghost">Rensa alla filter</button>
-                </div>`;
-            loadMoreContainer.style.display = 'none';
-            lucide.createIcons();
-            return;
-        }
-
-        if (!append) {
-            el.className = 'recipe-grid';
-            el.innerHTML = '';
-        }
-
-        const html = recipes.map(r => `
-            <a class="recipe-card" href="recipe.html?id=${r.id}">
-                ${r.image_url ? `
-                    <div class="recipe-card-image">
-                        <img src="${API}${r.image_url}" loading="lazy">
-                    </div>
-                ` : ''}
-                <div class="recipe-card-content">
-                    <h3>${esc(r.name)}</h3>
-                    <div class="meta">
-                        ${r.servings ? `<span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="users" style="width: 14px; height: 14px;"></i> ${r.servings} port.</span>` : ''}
-                        ${r.prep_time_minutes ? `<span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> ${r.prep_time_minutes} min</span>` : ''}
-                    </div>
-                    <div class="chip-group-mini">
-                        ${(r.categories || []).map(c => `<span class="chip-mini">${esc(c.name)}</span>`).join('')}
-                    </div>
-                    ${r.description ? `<p class="recipe-description-short">${esc(r.description)}</p>` : ''}
-                </div>
-            </a>
-        `).join('');
-
-        el.insertAdjacentHTML('beforeend', html);
-
-        // Show/hide load more button
-        if (recipes.length === LIMIT) {
-            loadMoreContainer.style.display = 'flex';
-        } else {
-            loadMoreContainer.style.display = 'none';
-        }
-
-        lucide.createIcons();
+        // Save to cache
+        sessionStorage.setItem(cacheKey, JSON.stringify(recipes));
+        renderRecipes(recipes, append);
 
     } catch (err) {
-        console.error(err);
-        if (!append) {
-            el.innerHTML = `<div class="empty-state"><p>Kunde inte ladda recept.</p></div>`;
+        console.error('Fetch error, checking cache...', err);
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+            console.log('Serving from cache');
+            renderRecipes(JSON.parse(cached), append);
+        } else if (!append) {
+            el.innerHTML = `<div class="empty-state"><p>Kunde inte ladda recept just nu. Kontrollera din anslutning.</p></div>`;
         }
     }
+}
+
+function renderRecipes(recipes, append) {
+    const el = document.getElementById('content');
+    const loadMoreContainer = document.getElementById('load-more-container');
+
+    if (!append && !recipes.length) {
+        el.className = '';
+        el.innerHTML = `
+            <div class="empty-state">
+                <div class="icon"><i data-lucide="utensils" style="width: 48px; height: 48px; opacity: 0.2;"></i></div>
+                <p>Inga recept matchar din sökning.</p><br>
+                <button onclick="clearAll()" class="btn btn-ghost">Rensa alla filter</button>
+            </div>`;
+        loadMoreContainer.style.display = 'none';
+        lucide.createIcons();
+        return;
+    }
+
+    if (!append) {
+        el.className = 'recipe-grid';
+        el.innerHTML = '';
+    }
+
+    const html = recipes.map(r => `
+        <a class="recipe-card" href="recipe.html?id=${r.id}">
+            ${r.image_url ? `
+                <div class="recipe-card-image">
+                    <img src="${API}${r.image_url}" loading="lazy">
+                </div>
+            ` : ''}
+            <div class="recipe-card-content">
+                <h3>${esc(r.name)}</h3>
+                <div class="meta">
+                    ${r.servings ? `<span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="users" style="width: 14px; height: 14px;"></i> ${r.servings} port.</span>` : ''}
+                    ${r.prep_time_minutes ? `<span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> ${r.prep_time_minutes} min</span>` : ''}
+                </div>
+                <div class="chip-group-mini">
+                    ${(r.categories || []).map(c => `<span class="chip-mini">${esc(c.name)}</span>`).join('')}
+                </div>
+                ${r.description ? `<p class="recipe-description-short">${esc(r.description)}</p>` : ''}
+            </div>
+        </a>
+    `).join('');
+
+    el.insertAdjacentHTML('beforeend', html);
+
+    // Show/hide load more button
+    if (recipes.length === LIMIT) {
+        loadMoreContainer.style.display = 'flex';
+    } else {
+        loadMoreContainer.style.display = 'none';
+    }
+
+    lucide.createIcons();
 }
 
 async function loadMore() {

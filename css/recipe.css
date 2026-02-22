@@ -121,3 +121,54 @@
     font-size: 0.95rem;
     margin-bottom: 1.5rem;
 }
+
+/* ── ACTION BUTTONS ── */
+.recipe-actions {
+    display: flex !important;
+    gap: 0.5rem !important;
+    align-items: center !important;
+}
+
+.btn-delete {
+    color: var(--text-muted);
+}
+
+.btn-delete:hover {
+    color: var(--danger);
+    background: var(--danger-light);
+    border-color: var(--danger);
+}
+
+.confirm-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    background: var(--surface2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    animation: slideInRight 0.2s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.btn-confirm {
+    color: var(--danger);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.btn-abort {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}

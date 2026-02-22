@@ -174,9 +174,14 @@ async function load() {
 
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem;">
                 <h1 style="margin: 0;">${esc(r.name)}</h1>
-                <a href="edit.html?id=${r.id}" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.82rem; flex-shrink: 0; display: flex; align-items: center; gap: 4px;">
-                    <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Ändra
-                </a>
+                <div id="recipe-actions-area" class="recipe-actions" style="flex-shrink: 0;">
+                    <a href="edit.html?id=${r.id}" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.82rem; display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Ändra
+                    </a>
+                    <button onclick="showDeleteConfirm()" class="btn btn-ghost btn-delete" style="padding: 0.4rem; font-size: 0.82rem; min-width: 36px;" title="Radera recept">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="meta" style="margin-bottom: 1.5rem;">
@@ -208,6 +213,58 @@ async function load() {
     }
 }
 
+function showDeleteConfirm() {
+    const actions = document.getElementById('recipe-actions-area');
+    if (!actions) return;
+
+    actions.innerHTML = `
+        <div class="confirm-actions">
+            <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-right: 0.25rem;">Radera?</span>
+            <button onclick="confirmDelete()" class="btn btn-ghost btn-confirm" style="padding: 0.3rem 0.6rem;">Bekräfta</button>
+            <button onclick="renderActions()" class="btn btn-ghost btn-abort" style="padding: 0.3rem 0.6rem;">Avbryt</button>
+        </div>
+    `;
+}
+
+function renderActions() {
+    const area = document.getElementById('recipe-actions-area');
+    if (!area || !currentRecipe) return;
+
+    area.innerHTML = `
+        <a href="edit.html?id=${currentRecipe.id}" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.82rem; display: flex; align-items: center; gap: 4px;">
+            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Ändra
+        </a>
+        <button onclick="showDeleteConfirm()" class="btn btn-ghost btn-delete" style="padding: 0.4rem; font-size: 0.82rem; min-width: 36px;" title="Radera recept">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+        </button>
+    `;
+    if (window.lucide) lucide.createIcons();
+}
+
+async function confirmDelete() {
+    if (!currentRecipe) return;
+
+    try {
+        const res = await fetch(`${API}/recipes/${currentRecipe.id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok) {
+            window.location.href = 'index.html';
+        } else {
+            alert('Gick inte att radera receptet.');
+            renderActions();
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Ett fel uppstod vid radering.');
+        renderActions();
+    }
+}
+
 window.updateIngredients = updateIngredients;
 window.changeServings = changeServings;
+window.showDeleteConfirm = showDeleteConfirm;
+window.confirmDelete = confirmDelete;
+window.renderActions = renderActions;
 load();

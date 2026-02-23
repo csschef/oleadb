@@ -219,7 +219,7 @@ function renderActions() {
 
     area.innerHTML = `
         <a href="edit.html?id=${currentRecipe.id}" class="btn btn-ghost">
-            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Ändra
+            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
         </a>
         <button onclick="showDeleteConfirm()" class="btn btn-ghost btn-delete" title="Radera recept">
             <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>

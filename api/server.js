@@ -157,7 +157,7 @@ app.get('/recipes/:id', async (req, res) => {
 
     try {
         const recipeResult = await db.query(`
-            SELECT id, name, description, servings, prep_time_minutes, image_url
+            SELECT id, name, description, servings, prep_time_minutes, image_url, created_at
             FROM recipe
             WHERE id = $1
         `, [id]);

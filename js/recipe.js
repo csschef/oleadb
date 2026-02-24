@@ -166,7 +166,7 @@ async function load() {
             
             <div class="recipe-date" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 4px;">
                 <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
-                Skapat ${new Date(r.created_at).toLocaleDateString('sv-SE')}
+                Skapad: ${new Date(r.created_at).toLocaleDateString('sv-SE')}
             </div>
 
             <div id="category-chips" class="chip-group" style="margin-bottom: 1.50rem; gap: 0.4rem;">

@@ -23,6 +23,8 @@ html {
     --text-muted: #6b6560;
     --danger: #c0392b;
     --danger-light: #fdecea;
+    --edit: #1d9654;
+    --edit-light: #eafdeb;
     --success: #2d6a4f;
     --success-hover: #1b4332;
     --font: 'Inter', sans-serif;
@@ -296,7 +298,8 @@ select {
 .chip-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    margin-bottom: 1rem;
+    gap: 0.4rem
 }
 
 .chip {

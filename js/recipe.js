@@ -161,6 +161,11 @@ async function load() {
         document.title = `${r.name} - Receptsamling`;
 
         el.className = 'recipe-detail';
+        const ingredientCount = new Set(
+            (r.steps || [])
+                .flatMap(step => step.ingredients || [])
+                .map(i => i.ingredient_name?.toLowerCase())
+        ).size;
         el.innerHTML = `
             ${r.image_url ? `<div class="hero-image"><img src="${API}${r.image_url}"></div>` : ''}
             
@@ -169,25 +174,36 @@ async function load() {
                 Skapad: ${new Date(r.created_at).toLocaleDateString('sv-SE')}
             </div>
 
-            <div id="category-chips" class="chip-group" style="margin-bottom: 1.50rem; gap: 0.4rem;">
+            <div id="category-chips" class="chip-group">
                 ${(r.categories || []).map(c => `<span class="chip-mini">${esc(c.name)}</span>`).join('')}
             </div>
 
             <h1 style="margin-bottom: 0.5rem;">${esc(r.name)}</h1>
 
-            <div class="meta" style="margin-bottom: 1.5rem;">
-                <div class="servings-control">
-                    <button class="servings-btn" onclick="changeServings(-1)" title="Minska portioner">
-                        <i data-lucide="minus" style="width: 14px; height: 14px;"></i>
-                    </button>
-                    <span class="servings-text"><span id="servings-display">${currentServings}</span> portioner</span>
-                    <button class="servings-btn" onclick="changeServings(1)" title="Öka portioner">
-                        <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
-                    </button>
+            <div class="meta">
+
+                <div class="meta-info">
+                    ${r.prep_time_minutes ? `<span class="meta-item">
+                        <i data-lucide="clock"></i> ${r.prep_time_minutes} min
+                    </span>` : ''}
+
+                    ${ingredientCount ? `<span class="meta-item">
+                        <i data-lucide="list"></i> ${ingredientCount} ingredienser
+                    </span>` : ''}
                 </div>
-                ${r.prep_time_minutes ? `<span style="display: flex; align-items: center; gap: 4px;">
-                    <i data-lucide="clock" style="width: 18px; height: 18px; color: var(--accent);"></i> ${r.prep_time_minutes} min
-                </span>` : ''}
+
+                <div class="meta-servings">
+                    <div class="servings-control">
+                        <button class="servings-btn" onclick="changeServings(-1)" title="Minska portioner">
+                            <i data-lucide="minus"></i>
+                        </button>
+                        <span class="servings-text"><span id="servings-display">${currentServings}</span> portioner</span>
+                        <button class="servings-btn" onclick="changeServings(1)" title="Öka portioner">
+                            <i data-lucide="plus"></i>
+                        </button>
+                    </div>
+                </div>
+
             </div>
             ${r.description ? `<p class="recipe-description" style="font-size: 1.05rem; margin-bottom: 2rem;">${esc(r.description)}</p>` : ''}
 
@@ -223,7 +239,7 @@ function renderActions() {
     if (!area || !currentRecipe) return;
 
     area.innerHTML = `
-        <a href="edit.html?id=${currentRecipe.id}" class="btn btn-ghost">
+        <a href="edit.html?id=${currentRecipe.id}" class="btn btn-ghost btn-edit">
             <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
         </a>
         <button onclick="showDeleteConfirm()" class="btn btn-ghost btn-delete" title="Radera recept">

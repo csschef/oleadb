@@ -37,19 +37,47 @@
     display: block;
 }
 
-.recipe-detail h1 {
-    margin-bottom: 0.5rem;
-}
-
 
 .recipe-detail .meta {
     font-size: 0.85rem;
     color: var(--text-muted);
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: 1rem;
+}
+
+.meta-info {
+    display: flex;
     align-items: center;
     gap: 1.25rem;
-    margin-bottom: 1.5rem;
     flex-wrap: wrap;
+}
+
+.meta-servings {
+    display: flex;
+    align-items: center;
+}
+
+.meta-info,
+.meta-servings {
+    width: 100%;
+}
+
+.meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.meta-item svg {
+    width: 18px;
+    height: 18px;
+    display: block;
 }
 
 .servings-control {
@@ -226,6 +254,19 @@
     color: var(--danger);
     background: var(--danger-light);
     border-color: var(--danger);
+}
+
+.btn-edit {
+    color: var(--text-muted);
+    min-width: 36px;
+    padding: 0 !important;
+    /* Square for icon-only */
+}
+
+.btn-edit:hover {
+    color: var(--edit);
+    background: var(--edit-light);
+    border-color: var(--edit);
 }
 
 .confirm-actions {

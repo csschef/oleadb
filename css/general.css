@@ -34,7 +34,11 @@ html {
 
 body {
     font-family: var(--font);
-    background: var(--bg);
+    background: url("../img/bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     color: var(--text);
     font-size: 1rem;
     line-height: 1.6;
@@ -91,12 +95,22 @@ nav {
 .container {
     padding: 1.5rem 1rem;
     max-width: 680px;
+    margin: 2rem auto;
+    background-color: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.container-index {
+    padding: 1.5rem 1rem;
+    max-width: 680px;
     margin: 0 auto;
 }
 
 @media (min-width: 600px) {
 
     .container,
+    .container-index,
     .nav-container {
         max-width: 800px;
         padding-left: 1.5rem;

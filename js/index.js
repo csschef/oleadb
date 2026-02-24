@@ -162,9 +162,6 @@ function renderRecipes(recipes, append) {
                     ${r.servings ? `<span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="users" style="width: 14px; height: 14px;"></i> ${r.servings} port.</span>` : ''}
                     ${r.prep_time_minutes ? `<span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> ${r.prep_time_minutes} min</span>` : ''}
                 </div>
-                <div class="chip-group-mini">
-                    ${(r.categories || []).map(c => `<span class="chip-mini">${esc(c.name)}</span>`).join('')}
-                </div>
                 ${r.description ? `<p class="recipe-description-short">${esc(r.description)}</p>` : ''}
             </div>
         </a>

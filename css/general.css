@@ -64,8 +64,11 @@ nav {
 .nav-brand {
     font-weight: 700;
     font-size: 1rem;
-    color: var(--accent);
+    color: black;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .nav-links a {

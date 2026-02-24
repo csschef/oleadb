@@ -162,7 +162,7 @@ async function load() {
 
         el.className = 'recipe-detail';
         el.innerHTML = `
-            ${r.image_url ? `<div class="hero-image" style="margin-bottom: 0.5rem;"><img src="${API}${r.image_url}" style="width:100%; height:300px; object-fit:cover; border-radius:12px; box-shadow:var(--shadow);"></div>` : ''}
+            ${r.image_url ? `<div class="hero-image"><img src="${API}${r.image_url}"></div>` : ''}
             
             <div class="recipe-date" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 4px;">
                 <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>

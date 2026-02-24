@@ -37,16 +37,54 @@ function handleFile(file) {
 }
 
 /* ── CATEGORIES ── */
+const TYPE_TRANSLATIONS = {
+    'component': 'Komponent',
+    'main_ingredient': 'Huvudingrediens',
+    'cuisine': 'Kök',
+    'time': 'Tid',
+    'occasion': 'Tillfälle'
+};
+
+const TYPE_ORDER = ['main_ingredient', 'cuisine', 'component', 'time', 'occasion'];
+
 async function loadCategories() {
     const container = document.getElementById('category-selector');
+
     try {
         const res = await fetch(`${API}/categories`);
         const categories = await res.json();
-        container.innerHTML = categories.map(cat => `
-            <div class="chip chip-interactive" data-id="${cat.id}" onclick="toggleCategory(${cat.id})">
-                ${esc(cat.name)}
-            </div>
-        `).join('');
+
+        // gruppera
+        const groups = categories.reduce((acc, cat) => {
+            const type = cat.type || 'other';
+            if (!acc[type]) acc[type] = [];
+            acc[type].push(cat);
+            return acc;
+        }, {});
+
+        // rendera
+        container.innerHTML = TYPE_ORDER
+            .filter(type => groups[type])
+            .map(type => `
+                <div class="category-group">
+                    <div class="category-group-header">
+                        ${TYPE_TRANSLATIONS[type] || type}
+                    </div>
+
+                    <div class="chip-group">
+                        ${groups[type]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(cat => `
+                                <div class="chip chip-interactive"
+                                     data-id="${cat.id}"
+                                     onclick="toggleCategory(${cat.id})">
+                                    ${esc(cat.name)}
+                                </div>
+                            `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
     } catch (err) {
         console.error("Failed to load categories", err);
     }

@@ -179,6 +179,41 @@ select {
     padding-right: 2.5rem;
 }
 
+.category-group {
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+    /* luft mellan grupper */
+}
+
+.category-group:last-child {
+    margin-bottom: 0.5rem;
+}
+
+.category-group-header {
+    display: block;
+    /* viktig */
+    width: 100%;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.6;
+    margin-bottom: 0.4rem;
+}
+
+.category-group-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    opacity: 0.5;
+}
+
+.chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
 /* ── BUTTONS ── */
 .btn {
     display: inline-flex;

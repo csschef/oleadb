@@ -165,34 +165,6 @@
     text-decoration: underline;
 }
 
-.category-group {
-    margin-bottom: 1.5rem;
-}
-
-.category-group:last-child {
-    margin-bottom: 0.5rem;
-}
-
-.category-group-header {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.category-group-header::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-    opacity: 0.5;
-}
-
 /* ── RECIPE GRID & CARDS ── */
 .recipe-grid {
     display: grid;

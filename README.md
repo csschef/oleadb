@@ -3,6 +3,9 @@
 A full-stack recipe management system built with **Node.js, Express & PostgreSQL**.  
 Designed to run on a self-hosted Windows server and stay live 24/7 inside a home network.
 
+<img width="2535" height="1283" alt="oleadb1" src="https://github.com/user-attachments/assets/4782c481-fc2e-48f6-9fca-444b52b825b6" />
+
+
 ---
 
 ## About

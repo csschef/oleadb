@@ -196,3 +196,7 @@ The backup script:
 - Saves to C:\Backups\OleaDB
 - Cleans up old backups
 - Exits properly with exit 0
+
+## License
+
+This project is licensed under the MIT License.

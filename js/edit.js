@@ -1,3 +1,7 @@
+import { initIcons } from './shared.js';
+
+initIcons();
+
 const API = `http://${window.location.hostname}:3000`;
 const urlParams = new URLSearchParams(window.location.search);
 const recipeId = urlParams.get('id');

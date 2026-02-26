@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ändra recept - OleaDB</title>
-    <meta name="description" content="Ändra ett befintligt recept">
+    <title>Skapa recept - OleaDB</title>
+    <meta name="description" content="Skapa ett nytt recept i din samling">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,14 +23,14 @@
             </a>
             <div class="nav-links">
                 <a href="index.html">Recept</a>
-                <a href="create.html">Skapa</a>
+                <a href="create.html" class="active">Skapa</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
         <header class="page-header">
-            <h1 id="page-title">Ändra recept</h1>
+            <h1>Skapa nytt recept</h1>
         </header>
 
         <form id="recipe-form" onsubmit="return false;">
@@ -39,11 +39,11 @@
             <div class="form-section">
                 <h2>Bild</h2>
                 <div class="image-upload-area" id="image-drop-area">
-                    <input type="file" id="image-input" accept="image/*" class="hidden">
+                    <input type="file" id="image-input" accept="image/*" class="is-hidden">
                     <div id="image-preview-container" class="image-preview-container">
                         <div class="upload-placeholder">
                             <span class="icon">📸</span>
-                            <p>Klicka eller dra en ny bild hit för att byta</p>
+                            <p>Klicka eller dra en bild hit</p>
                         </div>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
 
                 <div class="field">
                     <label for="recipe-name">Namn</label>
-                    <input type="text" id="recipe-name" placeholder="Laddar…" required autofocus>
+                    <input type="text" id="recipe-name" placeholder="T.ex. Farmors köttbullar" required autofocus>
                 </div>
 
                 <div class="field">
@@ -102,10 +102,10 @@
             <div class="form-actions">
                 <button type="button" id="save-btn" class="btn btn-success btn-lg btn-save">
                     <i data-lucide="save" class="icon-md"></i>
-                    Spara ändringar
+                    Spara recept
                 </button>
 
-                <a id="cancel-btn" href="index.html" class="btn btn-ghost">
+                <a href="index.html" class="btn btn-ghost">
                     Avbryt
                 </a>
             </div>

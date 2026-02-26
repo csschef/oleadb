@@ -305,6 +305,7 @@ textarea {
     display: flex;
     gap: 0.9rem;
     margin-top: 2rem;
+    justify-content: center;
 }
 
 /* ─────────────────────────────────────
@@ -326,7 +327,6 @@ textarea {
 }
 
 .btn-save {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;

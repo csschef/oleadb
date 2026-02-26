@@ -65,7 +65,7 @@ Express API (Node.js)
 ↓  
 PostgreSQL  
 
-Backend listens on port: Backend listens on port: 3000
+Backend listens on port: 3000
 
 ---
 
@@ -100,7 +100,7 @@ Backend listens on port: Backend listens on port: 3000
 ### Clone the repository
 
 ```
-git clone https://github.com/<your-username>/oleadb.git
+git clone https://github.com/csschef/oleadb.git
 cd oleadb
 npm install
 ```
@@ -146,7 +146,7 @@ The schema file contains:
 
 1️⃣ Create the database:
 
-```bash
+```
 createdb oleadb
 psql -U postgres -d oleadb -f database/schema.sql
 ```

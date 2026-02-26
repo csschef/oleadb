@@ -48,7 +48,7 @@ The application runs locally on a Windows server using **PM2** and includes auto
 - Image upload (Multer)  
 - Portion scaling  
 - Autocomplete for ingredients  
-- Unit validation against database values  
+- Validation against database values  
 - Automatic daily PostgreSQL backup (03:00)  
 - Runs as persistent Windows service (PM2)  
 - Responsive design  
@@ -156,7 +156,7 @@ The schema file contains:
 
 ### Recreate the Database
 
-1️⃣ Create the database:
+Create the database:
 
 ```
 createdb oleadb

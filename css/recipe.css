@@ -84,7 +84,7 @@
     display: flex;
     align-items: center;
     gap: 0.1rem;
-    background: #fdfcfb;
+    background: var(--surface-warm);
     border: 1px solid var(--border);
     border-radius: 999px;
     padding: 0.15rem;
@@ -137,17 +137,17 @@
 
 /* ── STEP & INGREDIENT CARDS ── */
 .step-card {
-    background: #fdfcfb;
+    background: var(--surface-warm);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     margin-bottom: 2rem;
     overflow: hidden;
     padding: 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-lg);
 }
 
 .step-ingredients {
-    background: #fdfcfb;
+    background: var(--surface-warm);
     /* Even lighter warm tone */
     border-bottom: 1px solid var(--border);
     padding: 1.5rem;
@@ -230,23 +230,23 @@
 
 /* ── ACTION BUTTONS ── */
 .recipe-actions {
-    display: flex !important;
-    gap: 0.5rem !important;
-    align-items: center !important;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .recipe-actions .btn {
-    height: 36px !important;
-    padding: 0 0.8rem !important;
-    font-size: 0.82rem !important;
-    display: flex !important;
-    align-items: center !important;
+    height: 36px;
+    padding: 0 0.8rem;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
 }
 
 .btn-delete {
     color: var(--text-muted);
     min-width: 36px;
-    padding: 0 !important;
+    padding: 0;
     /* Square for icon-only */
 }
 
@@ -259,7 +259,7 @@
 .btn-edit {
     color: var(--text-muted);
     min-width: 36px;
-    padding: 0 !important;
+    padding: 0;
     /* Square for icon-only */
 }
 
@@ -270,9 +270,9 @@
 }
 
 .confirm-actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     background: var(--surface2);
     padding: 0.25rem 0.5rem;
     border-radius: 8px;
@@ -301,4 +301,56 @@
 .btn-abort {
     color: var(--text-muted);
     font-size: 0.8rem;
+}
+
+
+/* ─────────────────────────────────────
+   REFACTOR SUPPORT CLASSES
+───────────────────────────────────── */
+
+.recipe-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recipe-title {
+    margin-bottom: 0.5rem;
+}
+
+.step-title-only {
+    padding-bottom: 0;
+}
+
+.step-title {
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+    font-size: 1.2rem;
+}
+
+.confirm-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-right: 0.25rem;
+}
+
+/* Icon sizing */
+
+.icon-xs {
+    width: 12px;
+    height: 12px;
+}
+
+.icon-sm {
+    width: 14px;
+    height: 14px;
+}
+
+.icon-md {
+    width: 16px;
+    height: 16px;
 }

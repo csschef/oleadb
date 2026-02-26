@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skapa recept - OleaDB</title>
-    <meta name="description" content="Skapa ett nytt recept i din receptsamling">
+    <title>Ändra recept - OleaDB</title>
+    <meta name="description" content="Ändra ett befintligt recept">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="css/general.css">
     <link rel="stylesheet" href="css/create.css">
 </head>
@@ -15,30 +17,33 @@
 <body>
     <nav>
         <div class="nav-container">
-            <a href="index.html" class="nav-brand"><img src="img/OleaDB.png" alt="OleaDB" width="26" height="26">
-                OleaDB</a>
+            <a href="index.html" class="nav-brand">
+                <img src="img/OleaDB.png" alt="OleaDB" width="26" height="26">
+                OleaDB
+            </a>
             <div class="nav-links">
                 <a href="index.html">Recept</a>
-                <a href="create.html" class="active">Skapa</a>
+                <a href="create.html">Skapa</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
         <header class="page-header">
-            <h1>Skapa nytt recept</h1>
+            <h1 id="page-title">Ändra recept</h1>
         </header>
 
         <form id="recipe-form" onsubmit="return false;">
+
             <!-- IMAGE UPLOAD -->
             <div class="form-section">
                 <h2>Bild</h2>
                 <div class="image-upload-area" id="image-drop-area">
-                    <input type="file" id="image-input" accept="image/*" style="display: none;">
+                    <input type="file" id="image-input" accept="image/*" class="hidden">
                     <div id="image-preview-container" class="image-preview-container">
                         <div class="upload-placeholder">
                             <span class="icon">📸</span>
-                            <p>Klicka eller dra en bild hit</p>
+                            <p>Klicka eller dra en ny bild hit för att byta</p>
                         </div>
                     </div>
                 </div>
@@ -47,19 +52,23 @@
             <!-- BASIC INFO -->
             <div class="form-section">
                 <h2>Om receptet</h2>
+
                 <div class="field">
                     <label for="recipe-name">Namn</label>
-                    <input type="text" id="recipe-name" placeholder="T.ex. Farmors Köttbullar" required autofocus>
+                    <input type="text" id="recipe-name" placeholder="Laddar…" required autofocus>
                 </div>
+
                 <div class="field">
                     <label for="recipe-description">Beskrivning</label>
                     <textarea id="recipe-description" placeholder="Berätta lite om receptet…"></textarea>
                 </div>
+
                 <div class="two-col">
                     <div class="field">
                         <label for="recipe-servings">Portioner</label>
                         <input type="number" id="recipe-servings" placeholder="T.ex. 4" min="1">
                     </div>
+
                     <div class="field">
                         <label for="recipe-preptime">Tid (min)</label>
                         <input type="number" id="recipe-preptime" placeholder="T.ex. 30" min="1">
@@ -71,36 +80,43 @@
             <div class="form-section">
                 <h2>Kategorier</h2>
                 <div id="category-selector" class="chip-group">
-                    <!-- Categories will be rendered here -->
+                    <!-- Categories rendered via JS -->
                 </div>
             </div>
 
             <!-- STEPS & INGREDIENTS -->
             <div class="form-section">
                 <h2>Steg & Ingredienser</h2>
+
                 <div id="steps-container" class="steps-container">
-                    <!-- Steps with nested ingredients added via JS -->
+                    <!-- Steps added via JS -->
                 </div>
-                <button type="button" id="add-step-btn" class="btn btn-ghost"
-                    style="width: 100%; margin-bottom: 2rem; border: 2px dashed var(--border);">
-                    <i data-lucide="plus" style="width: 18px; height: 18px;"></i> Lägg till nytt steg
+
+                <button type="button" id="add-step-btn" class="btn btn-ghost btn-add-step">
+                    <i data-lucide="plus" class="icon-sm"></i>
+                    Lägg till nytt steg
                 </button>
             </div>
 
+            <!-- ACTIONS -->
             <div class="form-actions">
-                <button type="button" class="btn btn-success btn-lg" id="save-btn"
-                    style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <i data-lucide="save" style="width: 20px; height: 20px;"></i> Spara recept
+                <button type="button" id="save-btn" class="btn btn-success btn-lg btn-save">
+                    <i data-lucide="save" class="icon-md"></i>
+                    Spara ändringar
                 </button>
-                <a href="index.html" class="btn btn-ghost">Avbryt</a>
+
+                <a id="cancel-btn" href="index.html" class="btn btn-ghost">
+                    Avbryt
+                </a>
             </div>
+
         </form>
     </div>
 
     <div class="toast" id="toast"></div>
 
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="js/create.js"></script>
+    <script type="module" src="js/create.js"></script>
 </body>
 
 </html>

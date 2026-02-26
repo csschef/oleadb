@@ -15,8 +15,10 @@
 <body>
     <nav>
         <div class="nav-container">
-            <a href="index.html" class="nav-brand"><img src="img/OleaDB.png" alt="OleaDB" width="26" height="26">
-                OleaDB</a>
+            <a href="index.html" class="nav-brand">
+                <img src="img/OleaDB.png" alt="OleaDB" width="26" height="26">
+                OleaDB
+            </a>
             <div class="nav-links">
                 <a href="index.html" class="active">Recept</a>
                 <a href="create.html">Skapa</a>
@@ -27,43 +29,50 @@
     <div class="container-index">
         <div class="page-header">
             <h1>Recept</h1>
+
             <div class="search-section">
                 <div class="search-wrapper">
-                    <span class="search-icon"><i data-lucide="search" style="width: 18px; height: 18px;"></i></span>
+
+                    <span class="search-icon">
+                        <i data-lucide="search" class="icon-sm"></i>
+                    </span>
+
                     <input type="text" id="search-input" placeholder="Sök efter recept…" autocomplete="off">
-                    <button id="clear-search" class="btn-clear" title="Rensa sökning" style="display: none;">
-                        <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+
+                    <button id="clear-search" class="btn-clear is-hidden" title="Rensa sökning">
+                        <i data-lucide="x" class="icon-sm"></i>
                     </button>
+
                     <button id="filter-toggle" class="btn-filter" title="Filtrera">
-                        <i data-lucide="sliders-horizontal" style="width: 18px; height: 18px;"></i>
-                        <span class="filter-badge" id="filter-count" style="display: none;">0</span>
+                        <i data-lucide="sliders-horizontal" class="icon-sm"></i>
+                        <span class="filter-badge is-hidden" id="filter-count">0</span>
                     </button>
+
                 </div>
 
                 <div id="filter-panel" class="filter-panel">
                     <div class="filter-panel-header">
                         <h2>Filtrera efter kategorier</h2>
-                        <button id="clear-filters" class="btn-text" style="display: none;">Rensa alla</button>
+                        <button id="clear-filters" class="btn-text is-hidden">
+                            Rensa alla
+                        </button>
                     </div>
-                    <div id="category-picker">
-                        <!-- Available categories will be rendered as chips here -->
-                    </div>
+                    <div id="category-picker"></div>
                 </div>
             </div>
         </div>
 
         <div id="content" class="loading">Laddar…</div>
-        <div id="load-more-container" class="load-more-container" style="display: none;">
-            <button id="load-more-btn" class="btn btn-ghost btn-load-more">Ladda fler recept</button>
+
+        <div id="load-more-container" class="load-more-container is-hidden">
+            <button id="load-more-btn" class="btn btn-ghost btn-load-more">
+                Ladda fler recept
+            </button>
         </div>
     </div>
 
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="js/index.js"></script>
-    <script>
-        // Initial setup for static icons
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    </script>
+    <script type="module" src="js/index.js"></script>
 </body>
 
 </html>

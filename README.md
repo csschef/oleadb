@@ -59,11 +59,11 @@ The application runs locally on a Windows server using **PM2** and includes auto
 ---
 
 ## Architecture
-Frontend (HTML / CSS / JS)
-↓
-Express API (Node.js)
-↓
-PostgreSQL
+Frontend (HTML / CSS / JS)  
+↓  
+Express API (Node.js)  
+↓  
+PostgreSQL  
 
 Backend listens on port: Backend listens on port: 3000
 
@@ -124,19 +124,34 @@ npm start
 
 visit: http://localhost:3000
 
+---
+
 ## Database
 
-This repository does not include the database.
+This repository does **not** include the live PostgreSQL database.
 
-You need to create the following tables:
+The full database structure (schema) can be found here: /database/schema.sql
 
-- recipe
-- recipe_steps
-- recipe_step_ingredients
-- ingredient
-- unit
-- recipe_categories
-- recipe_category_map
+The schema file contains:
+
+- Tables  
+- Foreign keys  
+- Indexes  
+- Sequences  
+- Constraints  
+
+---
+
+### Recreate the Database
+
+1️⃣ Create the database:
+
+```bash
+createdb oleadb
+psql -U postgres -d oleadb -f database/schema.sql
+```
+
+---
 
 ## Security
 
@@ -144,6 +159,8 @@ You need to create the following tables:
 - Transactions are used during create/update operations
 - Image uploads are stored locally
 - No external exposure (LAN-only setup)
+
+---
 
 ## Production (Windows Server Setup)
 
@@ -157,6 +174,8 @@ The application runs on:
 pm2 start api/server.js --name oleadb
 pm2 save
 ```
+
+---
 
 ## Automatic Database Backup
 

@@ -92,3 +92,79 @@ Backend listens on port: Backend listens on port: 3000
 - Managed with PM2 as Windows service  
 - PostgreSQL running as Windows service  
 - Accessible in local network via: http://<server-ip>:3000
+
+---
+
+## Installation
+
+### Clone the repository
+
+```
+git clone https://github.com/<your-username>/oleadb.git
+cd oleadb
+npm install
+```
+
+### Create a .env file
+Create a .env file
+
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=recipes
+DB_USER=postgres
+DB_PASSWORD=your_password
+```
+
+### Start the server
+
+```
+npm start
+```
+
+visit: http://localhost:3000
+
+## Database
+
+This repository does not include the database.
+
+You need to create the following tables:
+
+- recipe
+- recipe_steps
+- recipe_step_ingredients
+- ingredient
+- unit
+- recipe_categories
+- recipe_category_map
+
+## Security
+
+- Backend validates units against the database
+- Transactions are used during create/update operations
+- Image uploads are stored locally
+- No external exposure (LAN-only setup)
+
+## Production (Windows Server Setup)
+
+The application runs on:
+
+- Windows 11
+- Node.js
+- PM2 as a Windows service
+
+```
+pm2 start api/server.js --name oleadb
+pm2 save
+```
+
+## Automatic Database Backup
+
+A backup script runs daily at 03:00 via Windows Task Scheduler.
+
+The backup script:
+
+- Uses pg_dump
+- Saves to C:\Backups\OleaDB
+- Cleans up old backups
+- Exits properly with exit 0

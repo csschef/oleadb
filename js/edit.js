@@ -44,6 +44,16 @@ function handleFile(file) {
 }
 
 /* ── CATEGORIES ── */
+const TYPE_TRANSLATIONS = {
+    'component': 'Komponent',
+    'main_ingredient': 'Huvudingrediens',
+    'cuisine': 'Kök',
+    'time': 'Tid',
+    'occasion': 'Tillfälle'
+};
+
+const TYPE_ORDER = ['main_ingredient', 'cuisine', 'component', 'time', 'occasion'];
+
 function toggleCategory(id) {
     const idx = selectedCategories.indexOf(id);
     if (idx > -1) {
@@ -283,11 +293,32 @@ async function init() {
         const catRes = await fetch(`${API}/categories`);
         const allCategories = await catRes.json();
         const selector = document.getElementById('category-selector');
-        selector.innerHTML = allCategories.map(cat => `
-            <div class="chip chip-interactive" data-id="${cat.id}" onclick="toggleCategory(${cat.id})">
-                ${esc(cat.name)}
-            </div>
-        `).join('');
+
+        const groups = allCategories.reduce((acc, cat) => {
+            const type = cat.type || 'other';
+            if (!acc[type]) acc[type] = [];
+            acc[type].push(cat);
+            return acc;
+        }, {});
+
+        selector.innerHTML = TYPE_ORDER
+            .filter(type => groups[type])
+            .map(type => `
+                <div class="category-group">
+                    <div class="category-group-header">
+                        ${TYPE_TRANSLATIONS[type] || type}
+                    </div>
+                    <div class="chip-group">
+                        ${groups[type]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(cat => `
+                                <div class="chip chip-interactive" data-id="${cat.id}" onclick="toggleCategory(${cat.id})">
+                                    ${esc(cat.name)}
+                                </div>
+                            `).join('')}
+                    </div>
+                </div>
+            `).join('');
 
         const res = await fetch(`${API}/recipes/${recipeId}`);
         if (!res.ok) throw new Error('Recipe not found');

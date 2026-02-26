@@ -26,11 +26,11 @@ The application runs locally on a Windows server using **PM2** and includes auto
 
 ## Demo view recipe
 
-[![OleaDB Demo](https://img.youtube.com/vi/mswEZ2LkbjM/maxresdefault.jpg)](https://youtu.be/mswEZ2LkbjM)
+[![OleaDB Demo](https://img.youtube.com/vi/mswEZ2LkbjM/hqdefault.jpg)](https://youtu.be/mswEZ2LkbjM)
 
 ## Demo create recipe
 
-[![OleaDB Demo](https://img.youtube.com/vi/-R2ygTnwDQ0/maxresdefault.jpg)](https://youtu.be/-R2ygTnwDQ0)
+[![OleaDB Demo](https://img.youtube.com/vi/-R2ygTnwDQ0/hqdefault.jpg)](https://youtu.be/-R2ygTnwDQ0)
 
 ---
 

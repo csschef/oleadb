@@ -3,6 +3,8 @@
 A full-stack recipe management system built with **Node.js, Express & PostgreSQL**.  
 Designed to run on a self-hosted Windows server and stay live 24/7 inside a home network.
 
+<img width="2535" height="1283" alt="oleadb1" src="https://github.com/user-attachments/assets/4782c481-fc2e-48f6-9fca-444b52b825b6" />
+
 
 ---
 
@@ -22,6 +24,16 @@ The backend serves both:
 - Static frontend  
 
 The application runs locally on a Windows server using **PM2** and includes automated PostgreSQL backups.
+
+---
+
+## Demo view recipe
+
+[![OleaDB Demo](https://img.youtube.com/vi/mswEZ2LkbjM/hqdefault.jpg)](https://youtu.be/mswEZ2LkbjM)
+
+## Demo create recipe
+
+[![OleaDB Demo](https://img.youtube.com/vi/-R2ygTnwDQ0/hqdefault.jpg)](https://youtu.be/-R2ygTnwDQ0)
 
 ---
 
@@ -187,3 +199,7 @@ The backup script:
 - Saves to C:\Backups\OleaDB
 - Cleans up old backups
 - Exits properly with exit 0
+
+## License
+
+This project is licensed under the MIT License.

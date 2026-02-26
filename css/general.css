@@ -19,6 +19,7 @@ html {
     --accent: #cc4c19;
     --accent-light: #f3e3d8;
     --accent-hover: rgb(180, 51, 0);
+    --surface-warm: #fdfcfb;
     --text: #1a1a1a;
     --text-muted: #6b6560;
     --danger: #c0392b;
@@ -32,6 +33,8 @@ html {
     --radius: 10px;
     --radius-lg: 16px;
     --shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 body {
@@ -45,6 +48,30 @@ body {
     font-size: 1rem;
     line-height: 1.6;
     min-height: 100vh;
+}
+
+/* ─────────────────────────────────────
+   HEADINGS
+───────────────────────────────────── */
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 1.25rem;
+}
+
+h2 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+h3 {
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 /* ── NAV ── */
@@ -109,39 +136,19 @@ nav {
     margin: 0 auto;
 }
 
-@media (min-width: 600px) {
 
-    .container,
-    .container-index,
-    .nav-container {
-        max-width: 800px;
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
-    }
-
-    .container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-
-    nav {
-        padding: 0;
-    }
+.icon-sm {
+    width: 14px;
+    height: 14px;
 }
 
-h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-    margin-bottom: 1.25rem;
+.icon-inline {
+    margin-right: 4px;
+    vertical-align: middle;
 }
 
-h2 {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
+.is-hidden {
+    display: none !important;
 }
 
 /* ── BASIC INPUTS & SELECTS ── */
@@ -192,26 +199,11 @@ select {
 
 .category-group-header {
     display: block;
-    /* viktig */
     width: 100%;
     font-size: 0.85rem;
     font-weight: 600;
     opacity: 0.6;
     margin-bottom: 0.4rem;
-}
-
-.category-group-header::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-    opacity: 0.5;
-}
-
-.chip-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
 }
 
 /* ── BUTTONS ── */
@@ -390,4 +382,24 @@ select {
 
 .chip-remove:hover {
     opacity: 1;
+}
+
+@media (min-width: 600px) {
+
+    .container,
+    .container-index,
+    .nav-container {
+        max-width: 800px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    nav {
+        padding: 0;
+    }
 }

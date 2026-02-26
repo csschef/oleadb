@@ -1,14 +1,23 @@
-/* ── FORM SECTIONS ── */
+/* =========================================================
+   CREATE / EDIT PAGE
+   ========================================================= */
+
+/* ─────────────────────────────────────
+   FORM SECTIONS
+───────────────────────────────────── */
+
 .form-section {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
 }
 
 .form-section h2 {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    font-size: .8rem;
 }
 
 .field {
@@ -21,75 +30,41 @@
 
 label {
     display: block;
-    font-size: 0.83rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text-muted);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.02em;
 }
 
 textarea {
     resize: vertical;
     min-height: 90px;
+    font-size: 0.95rem;
 }
+
+/* ─────────────────────────────────────
+   TWO COLUMN GRID
+───────────────────────────────────── */
 
 .two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    gap: 0.9rem;
 }
 
-/* ── AUTOCOMPLETE ── */
-.autocomplete-wrap {
-    position: relative;
-}
+/* =========================================================
+   IMAGE UPLOAD
+   ========================================================= */
 
-.dropdown {
-    position: absolute;
-    top: calc(100% + 3px);
-    left: 0;
-    right: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    z-index: 200;
-    display: none;
-    overflow: hidden;
-}
-
-.dropdown.open {
-    display: block;
-}
-
-.dropdown-item {
-    padding: 0.55rem 0.8rem;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.1s;
-}
-
-.dropdown-item:hover,
-.dropdown-item.focused {
-    background: var(--accent-light);
-    color: var(--accent);
-}
-
-.dropdown-empty {
-    padding: 0.55rem 0.8rem;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-/* ── IMAGE UPLOAD ── */
 .image-upload-area {
     border: 2px dashed var(--border);
     border-radius: var(--radius);
-    padding: 1rem;
+    padding: 1.5rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s ease;
     background: var(--surface2);
-    min-height: 180px;
+    min-height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -112,38 +87,89 @@ textarea {
     margin-bottom: 0.5rem;
 }
 
-.image-preview-container {
-    width: 100%;
-    position: relative;
-}
-
 .image-preview-container img {
     width: 100%;
-    height: 240px;
+    height: 260px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 12px;
     display: block;
 }
 
-/* ── INGREDIENT ROWS ── */
-.ingredient-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+/* =========================================================
+   AUTOCOMPLETE
+   ========================================================= */
+
+.autocomplete-wrap {
+    position: relative;
 }
 
-.ingredient-row {
-    display: grid;
-    grid-template-columns: 1fr 80px 100px 32px;
-    gap: 0.5rem;
-    align-items: center;
-    animation: slideIn 0.18s ease;
+.dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 200;
+    display: none;
 }
 
-@keyframes slideIn {
+.dropdown.open {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 0.65rem 0.9rem;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.dropdown-item:hover,
+.dropdown-item.focused {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+.dropdown-empty {
+    padding: 0.65rem 0.9rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* =========================================================
+   STEP BLOCK
+   ========================================================= */
+
+.step-item {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+    background: var(--surface);
+    /* ← vit */
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.18s ease;
+}
+
+/* ─────────────────────────────────────
+   INPUT STYLING (CREATE ONLY)
+───────────────────────────────────── */
+
+.step-item input,
+.step-item textarea {
+    background: var(--surface2);
+}
+
+@keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(-5px);
+        transform: translateY(-4px);
     }
 
     to {
@@ -152,93 +178,84 @@ textarea {
     }
 }
 
-.form-actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-}
-
-/* ── INSTRUCTION ROWS ── */
-.instruction-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.instruction-row {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-}
-
-.step-number {
-    width: 28px;
-    height: 28px;
-    background: var(--accent);
-    color: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    font-weight: 700;
-    flex-shrink: 0;
-    margin-top: 5px;
-}
-
-.instruction-row textarea {
-    min-height: 60px;
-}
-
-/* ── NESTED STEP BLOCKS ── */
-.step-item {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    background: var(--surface2);
-    position: relative;
-    animation: slideIn 0.2s ease;
-}
-
 .step-item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
 }
 
 .step-item-title-row {
-    display: flex;
-    gap: 1.25rem;
-    align-items: center;
     flex: 1;
 }
 
-.step-item-title-row input {
-    font-weight: 600;
+/* ─────────────────────────────────────
+   STEP TITLE INPUT
+───────────────────────────────────── */
+
+.step-title-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 0.75rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
     font-size: 0.95rem;
     color: var(--text);
-    background: transparent;
+    transition: border 0.15s ease, box-shadow 0.15s ease;
 }
 
+.step-title-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* =========================================================
+   STEP SECTIONS
+   ========================================================= */
+
+.step-ingredients-section,
 .step-instructions-section {
-    margin-top: 1.25rem;
+    margin-top: 1.5rem;
 }
 
+.step-ingredients-section h4,
 .step-instructions-section h4 {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.85rem;
 }
+
+/* =========================================================
+   INGREDIENT ROWS
+   ========================================================= */
+
+.ingredient-row-nested {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.ingredient-row-nested input {
+    height: 42px;
+    font-size: 0.92rem;
+}
+
+/* =========================================================
+   INSTRUCTION ROWS
+   ========================================================= */
 
 .instruction-list-nested {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.6rem;
 }
 
 .instruction-row-nested {
@@ -248,77 +265,113 @@ textarea {
 }
 
 .instruction-row-nested textarea {
-    min-height: 48px;
+    flex: 1;
+    min-height: 70px;
     font-size: 0.95rem;
 }
 
-.step-ingredients-section {
-    margin-bottom: 1.25rem;
-    padding: 0.75rem;
-    background: var(--surface);
-    border-radius: 8px;
-    border: 1px solid var(--border);
-}
-
-.step-ingredients-section h4 {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.ingredient-row-nested {
-    display: grid;
-    grid-template-columns: 1fr 100px 80px 32px;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-}
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 
 .btn-remove-step {
-    color: var(--error);
+    color: var(--danger);
     opacity: 0.6;
+    transition: opacity 0.15s ease;
 }
 
 .btn-remove-step:hover {
     opacity: 1;
 }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 600px) {
+.step-instructions-section .btn {
+    margin-top: 0.75rem;
+}
 
-    .ingredient-row,
+/* ─────────────────────────────────────
+   ICON SIZE FIX
+───────────────────────────────────── */
+
+.step-item .btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
+.form-actions {
+    display: flex;
+    gap: 0.9rem;
+    margin-top: 2rem;
+    justify-content: center;
+}
+
+/* ─────────────────────────────────────
+   CREATE PAGE UTILITIES
+───────────────────────────────────── */
+
+#image-input.hidden {
+    display: none;
+}
+
+.btn-add-step {
+    width: 100%;
+    margin-bottom: 2rem;
+    border: 2px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.icon-md {
+    width: 20px;
+    height: 20px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+    .two-col {
+        grid-template-columns: 1fr;
+    }
+
     .ingredient-row-nested {
-        grid-template-columns: 1fr 100px 36px;
+        grid-template-columns: 1fr 1fr auto;
         grid-template-areas:
-            "ing-name ing-name ing-delete"
-            "ing-amount ing-unit ing-delete";
-        gap: 0.5rem;
-        align-items: stretch;
+            "name name delete"
+            "amount unit delete";
+        gap: 0.6rem;
     }
 
-    .ingredient-row>*:nth-child(1),
-    .ingredient-row-nested>*:nth-child(1) {
-        grid-area: ing-name;
+    .ingredient-row-nested> :nth-child(1) {
+        grid-area: name;
     }
 
-    .ingredient-row>*:nth-child(2),
-    .ingredient-row-nested>*:nth-child(2) {
-        grid-area: ing-amount;
+    .ingredient-row-nested> :nth-child(2) {
+        grid-area: amount;
     }
 
-    .ingredient-row>*:nth-child(3),
-    .ingredient-row-nested>*:nth-child(3) {
-        grid-area: ing-unit;
+    .ingredient-row-nested> :nth-child(3) {
+        grid-area: unit;
     }
 
-    .ingredient-row>*:nth-child(4),
-    .ingredient-row-nested>*:nth-child(4) {
-        grid-area: ing-delete;
+    .ingredient-row-nested> :nth-child(4) {
+        grid-area: delete;
         display: flex;
         align-items: center;
         justify-content: center;
-        align-self: start;
-        height: 42px;
     }
 }

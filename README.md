@@ -86,7 +86,6 @@ Backend listens on port: 3000
 - Full CRUD implementation  
 - Relational database design  
 - Many-to-many mapping tables  
-- Transaction handling (BEGIN / COMMIT / ROLLBACK)  
 - REST API structure  
 - File upload handling  
 - Server-side validation  
@@ -167,7 +166,7 @@ psql -U postgres -d oleadb -f database/schema.sql
 
 ## Security
 
-- Backend validates units against the database
+- Backend validates values against the database
 - Transactions are used during create/update operations
 - Image uploads are stored locally
 - No external exposure (LAN-only setup)

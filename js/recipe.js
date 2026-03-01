@@ -104,7 +104,7 @@ function renderSteps() {
                                 <span class="ing-amount">
                                     ${scaleIngredient(i, currentServings)}
                                 </span>
-                                <span>${esc(i.ingredient_name)}</span>
+                                <span class="ing-name">${esc(i.ingredient_name)}</span>
                             </li>
                         `).join('')}
                     </ul>

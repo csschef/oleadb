@@ -384,6 +384,12 @@ select {
     opacity: 1;
 }
 
+/* ── TEXT ── */
+
+.ing-name {
+    text-transform: lowercase;
+}
+
 @media (min-width: 600px) {
 
     .container,

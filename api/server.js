@@ -13,11 +13,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static HTML/CSS/JS from project root
+// Static
 app.use(express.static(path.join(__dirname, '../')));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Multer setup for image uploads
+// Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, path.join(__dirname, '../uploads'));
@@ -40,10 +40,7 @@ try {
 /* ---------- INGREDIENT SEARCH ---------- */
 app.get('/ingredients', async (req, res) => {
     const search = req.query.q;
-
-    if (!search) {
-        return res.json([]);
-    }
+    if (!search) return res.json([]);
 
     try {
         const result = await db.query(`
@@ -55,14 +52,13 @@ app.get('/ingredients', async (req, res) => {
         `, [search]);
 
         res.json(result.rows);
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error' });
     }
 });
 
-/* ---------- UNITS (LIST ALL FOR DROPDOWN) ---------- */
+/* ---------- UNITS ---------- */
 app.get('/units', async (req, res) => {
     try {
         const result = await db.query(`
@@ -70,19 +66,21 @@ app.get('/units', async (req, res) => {
             FROM unit
             ORDER BY name
         `);
-
         res.json(result.rows);
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error' });
     }
 });
 
-/* ---------- CATEGORY LIST ---------- */
+/* ---------- CATEGORIES ---------- */
 app.get('/categories', async (req, res) => {
     try {
-        const result = await db.query('SELECT id, name, type FROM recipe_categories ORDER BY name');
+        const result = await db.query(`
+            SELECT id, name, type
+            FROM recipe_categories
+            ORDER BY name
+        `);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
@@ -90,14 +88,18 @@ app.get('/categories', async (req, res) => {
     }
 });
 
+/* ---------- GET ALL RECIPES ---------- */
 app.get('/recipes', async (req, res) => {
     const { q, categories, limit = 12, offset = 0 } = req.query;
+
     let query = `
-        SELECT DISTINCT r.id, r.name, r.description, r.servings, r.prep_time_minutes, r.image_url, r.created_at
+        SELECT DISTINCT r.id, r.name, r.description, r.servings,
+               r.prep_time_minutes, r.image_url, r.created_at
         FROM recipe r
         LEFT JOIN recipe_category_map rcm ON r.id = rcm.recipe_id
         WHERE 1=1
     `;
+
     const params = [];
 
     if (q) {
@@ -106,38 +108,48 @@ app.get('/recipes', async (req, res) => {
     }
 
     if (categories) {
-        const catList = categories.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+        const catList = categories.split(',')
+            .map(id => parseInt(id))
+            .filter(id => !isNaN(id));
+
         catList.forEach(id => {
             params.push(id);
-            query += ` AND r.id IN (SELECT recipe_id FROM recipe_category_map WHERE category_id = $${params.length})`;
+            query += `
+                AND r.id IN (
+                    SELECT recipe_id
+                    FROM recipe_category_map
+                    WHERE category_id = $${params.length}
+                )
+            `;
         });
     }
 
     query += ` ORDER BY r.created_at DESC`;
 
-    // Add Pagination
     params.push(parseInt(limit));
     query += ` LIMIT $${params.length}`;
+
     params.push(parseInt(offset));
     query += ` OFFSET $${params.length}`;
 
     try {
         const recipes = await db.query(query, params);
 
-        // For each recipe, fetch its categories
-        const recipeList = await Promise.all(recipes.rows.map(async (recipe) => {
-            const recipeCategories = await db.query(`
-                SELECT c.id, c.name, c.type
-                FROM recipe_categories c
-                JOIN recipe_category_map rcm ON c.id = rcm.category_id
-                WHERE rcm.recipe_id = $1
-            `, [recipe.id]);
+        const recipeList = await Promise.all(
+            recipes.rows.map(async (recipe) => {
+                const recipeCategories = await db.query(`
+                    SELECT c.id, c.name, c.type
+                    FROM recipe_categories c
+                    JOIN recipe_category_map rcm
+                      ON c.id = rcm.category_id
+                    WHERE rcm.recipe_id = $1
+                `, [recipe.id]);
 
-            return { ...recipe, categories: recipeCategories.rows };
-        }));
+                return { ...recipe, categories: recipeCategories.rows };
+            })
+        );
 
         res.json(recipeList);
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error' });
@@ -150,7 +162,8 @@ app.get('/recipes/:id', async (req, res) => {
 
     try {
         const recipeResult = await db.query(`
-            SELECT id, name, description, servings, prep_time_minutes, image_url, created_at
+            SELECT id, name, description, servings,
+                   prep_time_minutes, image_url, created_at
             FROM recipe
             WHERE id = $1
         `, [id]);
@@ -161,7 +174,6 @@ app.get('/recipes/:id', async (req, res) => {
 
         const recipe = recipeResult.rows[0];
 
-        // Fetch hierarchical steps and their ingredients
         const stepsResult = await db.query(`
             SELECT id, title, instructions, sort_order
             FROM recipe_steps
@@ -169,37 +181,39 @@ app.get('/recipes/:id', async (req, res) => {
             ORDER BY sort_order
         `, [id]);
 
-        const steps = await Promise.all(stepsResult.rows.map(async (step) => {
-            const ingredients = await db.query(`
-                SELECT 
-                    rsi.ingredient_name,
-                    rsi.amount,
-                    rsi.unit_id,
-                    u.abbreviation AS unit,
-                    rsi.sort_order
-                FROM recipe_step_ingredients rsi
-                LEFT JOIN unit u ON u.id = rsi.unit_id
-                WHERE rsi.recipe_step_id = $1
-                ORDER BY rsi.sort_order
-            `, [step.id]);
+        const steps = await Promise.all(
+            stepsResult.rows.map(async (step) => {
+                const ingredients = await db.query(`
+                    SELECT
+                        rsi.ingredient_name,
+                        rsi.amount,
+                        rsi.unit_id,
+                        u.abbreviation AS unit,
+                        rsi.sort_order
+                    FROM recipe_step_ingredients rsi
+                    LEFT JOIN unit u ON u.id = rsi.unit_id
+                    WHERE rsi.recipe_step_id = $1
+                    ORDER BY rsi.sort_order
+                `, [step.id]);
 
-            return {
-                ...step,
-                ingredients: ingredients.rows
-            };
-        }));
+                return {
+                    ...step,
+                    ingredients: ingredients.rows
+                };
+            })
+        );
 
-        // Fetch categories
         const recipeCategories = await db.query(`
             SELECT c.id, c.name, c.type
             FROM recipe_categories c
-            JOIN recipe_category_map rcm ON c.id = rcm.category_id
+            JOIN recipe_category_map rcm
+              ON c.id = rcm.category_id
             WHERE rcm.recipe_id = $1
         `, [id]);
 
         res.json({
             ...recipe,
-            steps: steps,
+            steps,
             categories: recipeCategories.rows
         });
 
@@ -211,13 +225,13 @@ app.get('/recipes/:id', async (req, res) => {
 
 /* ---------- CREATE RECIPE ---------- */
 app.post('/recipes', upload.single('image'), async (req, res) => {
-    // When using multer + FormData, JSON fields might be sent as strings
-    let { name, description, servings, prep_time_minutes, categories, steps } = req.body;
+    let { name, description, servings,
+          prep_time_minutes, categories, steps } = req.body;
 
     try {
         if (typeof categories === 'string') categories = JSON.parse(categories);
         if (typeof steps === 'string') steps = JSON.parse(steps);
-    } catch (e) {
+    } catch {
         return res.status(400).json({ error: 'Invalid data format' });
     }
 
@@ -228,20 +242,21 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
     const client = await db.connect();
+
     try {
         await client.query('BEGIN');
 
-        // 1. Insert Recipe
         const recipeResult = await client.query(`
-            INSERT INTO recipe (name, description, servings, prep_time_minutes, image_url)
+            INSERT INTO recipe
+            (name, description, servings, prep_time_minutes, image_url)
             VALUES ($1, $2, $3, $4, $5)
             RETURNING id
-        `, [name, description || null, servings || null, prep_time_minutes || null, imageUrl]);
+        `, [name, description || null, servings || null,
+            prep_time_minutes || null, imageUrl]);
 
         const recipeId = recipeResult.rows[0].id;
 
-        // 2. Insert Category Maps
-        if (categories && categories.length > 0) {
+        if (categories?.length) {
             for (const catId of categories) {
                 await client.query(`
                     INSERT INTO recipe_category_map (recipe_id, category_id)
@@ -250,49 +265,33 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
             }
         }
 
-        // 3. Insert Steps and their Ingredients
-        if (steps && steps.length > 0) {
-            for (let i = 0; i < steps.length; i++) {
-                const s = steps[i];
-                const stepResult = await client.query(`
-                    INSERT INTO recipe_steps (recipe_id, title, instructions, sort_order)
-                    VALUES ($1, $2, $3, $4)
-                    RETURNING id
-                `, [recipeId, s.title || null, s.instructions || null, i + 1]);
+        for (let i = 0; i < steps.length; i++) {
+            const s = steps[i];
 
-                const stepId = stepResult.rows[0].id;
+            const stepResult = await client.query(`
+                INSERT INTO recipe_steps
+                (recipe_id, title, instructions, sort_order)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id
+            `, [recipeId, s.title || null,
+                s.instructions || null, i + 1]);
 
-                if (s.ingredients && s.ingredients.length > 0) {
-                    for (let j = 0; j < s.ingredients.length; j++) {
-                        const ing = s.ingredients[j];
+            const stepId = stepResult.rows[0].id;
 
-                        // New: supports unit_id (dropdown) or old unit (text)
-                        let unitId = ing.unit_id ?? null;
+            for (let j = 0; j < (s.ingredients || []).length; j++) {
+                const ing = s.ingredients[j];
 
-                        if (!unitId && ing.unit) {
-                            const unitLookup = await client.query(
-                                `SELECT id FROM unit WHERE lower(abbreviation) = lower($1)`,
-                                [String(ing.unit).trim()]
-                            );
-                            if (unitLookup.rows.length > 0) {
-                                unitId = unitLookup.rows[0].id;
-                            }
-                        }
-
-                        await client.query(`
-                            INSERT INTO recipe_step_ingredients
-                            (recipe_step_id, ingredient_name, amount, unit, unit_id, sort_order)
-                            VALUES ($1, $2, $3, $4, $5, $6)
-                        `, [
-                            stepId,
-                            ing.name,
-                            ing.amount || null,
-                            ing.unit || null,   // keep legacy column during migration
-                            unitId,
-                            j + 1
-                        ]);
-                    }
-                }
+                await client.query(`
+                    INSERT INTO recipe_step_ingredients
+                    (recipe_step_id, ingredient_name, amount, unit_id, sort_order)
+                    VALUES ($1, $2, $3, $4, $5)
+                `, [
+                    stepId,
+                    ing.name,
+                    ing.amount || null,
+                    ing.unit_id ?? null,
+                    j + 1
+                ]);
             }
         }
 
@@ -311,12 +310,13 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
 /* ---------- UPDATE RECIPE ---------- */
 app.put('/recipes/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
-    let { name, description, servings, prep_time_minutes, categories, steps } = req.body;
+    let { name, description, servings,
+          prep_time_minutes, categories, steps } = req.body;
 
     try {
         if (typeof categories === 'string') categories = JSON.parse(categories);
         if (typeof steps === 'string') steps = JSON.parse(steps);
-    } catch (e) {
+    } catch {
         return res.status(400).json({ error: 'Invalid data format' });
     }
 
@@ -325,15 +325,19 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
     }
 
     const client = await db.connect();
+
     try {
         await client.query('BEGIN');
 
-        // 1. Update Basic Info
         let updateQuery = `
-            UPDATE recipe 
-            SET name = $1, description = $2, servings = $3, prep_time_minutes = $4
+            UPDATE recipe
+            SET name = $1,
+                description = $2,
+                servings = $3,
+                prep_time_minutes = $4
         `;
-        const params = [name, description || null, servings || null, prep_time_minutes || null];
+        const params = [name, description || null,
+                        servings || null, prep_time_minutes || null];
 
         if (req.file) {
             params.push(`/uploads/${req.file.filename}`);
@@ -342,11 +346,15 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
 
         params.push(id);
         updateQuery += ` WHERE id = $${params.length}`;
+
         await client.query(updateQuery, params);
 
-        // 2. Sync Categories
-        await client.query('DELETE FROM recipe_category_map WHERE recipe_id = $1', [id]);
-        if (categories && categories.length > 0) {
+        await client.query(
+            'DELETE FROM recipe_category_map WHERE recipe_id = $1',
+            [id]
+        );
+
+        if (categories?.length) {
             for (const catId of categories) {
                 await client.query(`
                     INSERT INTO recipe_category_map (recipe_id, category_id)
@@ -355,50 +363,38 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
             }
         }
 
-        // 3. Sync Steps and Ingredients (Delete all steps, which casades to step_ingredients)
-        await client.query('DELETE FROM recipe_steps WHERE recipe_id = $1', [id]);
-        if (steps && steps.length > 0) {
-            for (let i = 0; i < steps.length; i++) {
-                const s = steps[i];
-                const stepResult = await client.query(`
-                    INSERT INTO recipe_steps (recipe_id, title, instructions, sort_order)
-                    VALUES ($1, $2, $3, $4)
-                    RETURNING id
-                `, [id, s.title || null, s.instructions || null, i + 1]);
+        await client.query(
+            'DELETE FROM recipe_steps WHERE recipe_id = $1',
+            [id]
+        );
 
-                const stepId = stepResult.rows[0].id;
+        for (let i = 0; i < steps.length; i++) {
+            const s = steps[i];
 
-                if (s.ingredients && s.ingredients.length > 0) {
-                    for (let j = 0; j < s.ingredients.length; j++) {
-                        const ing = s.ingredients[j];
+            const stepResult = await client.query(`
+                INSERT INTO recipe_steps
+                (recipe_id, title, instructions, sort_order)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id
+            `, [id, s.title || null,
+                s.instructions || null, i + 1]);
 
-                        // New: supports unit_id (dropdown) or old unit (text)
-                        let unitId = ing.unit_id ?? null;
+            const stepId = stepResult.rows[0].id;
 
-                        if (!unitId && ing.unit) {
-                            const unitLookup = await client.query(
-                                `SELECT id FROM unit WHERE lower(abbreviation) = lower($1)`,
-                                [String(ing.unit).trim()]
-                            );
-                            if (unitLookup.rows.length > 0) {
-                                unitId = unitLookup.rows[0].id;
-                            }
-                        }
+            for (let j = 0; j < (s.ingredients || []).length; j++) {
+                const ing = s.ingredients[j];
 
-                        await client.query(`
-                            INSERT INTO recipe_step_ingredients
-                            (recipe_step_id, ingredient_name, amount, unit, unit_id, sort_order)
-                            VALUES ($1, $2, $3, $4, $5, $6)
-                        `, [
-                            stepId,
-                            ing.name,
-                            ing.amount || null,
-                            ing.unit || null,   // keep legacy column during migration
-                            unitId,
-                            j + 1
-                        ]);
-                    }
-                }
+                await client.query(`
+                    INSERT INTO recipe_step_ingredients
+                    (recipe_step_id, ingredient_name, amount, unit_id, sort_order)
+                    VALUES ($1, $2, $3, $4, $5)
+                `, [
+                    stepId,
+                    ing.name,
+                    ing.amount || null,
+                    ing.unit_id ?? null,
+                    j + 1
+                ]);
             }
         }
 
@@ -414,12 +410,10 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
     }
 });
 
-/* ---------- DELETE RECIPE ---------- */
+/* ---------- DELETE ---------- */
 app.delete('/recipes/:id', async (req, res) => {
-    const { id } = req.params;
-
     try {
-        await db.query('DELETE FROM recipe WHERE id = $1', [id]);
+        await db.query('DELETE FROM recipe WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -427,7 +421,7 @@ app.delete('/recipes/:id', async (req, res) => {
     }
 });
 
-/* ---------- START SERVER ---------- */
+/* ---------- START ---------- */
 app.listen(3000, () => {
     console.log('API running on http://localhost:3000');
 });

@@ -475,4 +475,3 @@ ALTER TABLE ONLY public.recipe_steps
 --
 -- PostgreSQL database dump complete
 --
-

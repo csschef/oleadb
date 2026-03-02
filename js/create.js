@@ -5,11 +5,13 @@ import {
     initIcons,
     makeTypeahead,
     fetchIngredients,
-    fetchUnits,
+    fetchAllUnits,
+    populateUnitSelect,
     validateRecipeForm
 } from './shared.js';
 
 let selectedCategories = [];
+let unitsCache = [];
 
 /* ─────────────────────────────────────
    TOAST
@@ -111,8 +113,8 @@ async function loadCategories() {
                     </div>
                     <div class="chip-group">
                         ${groups[type]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map(cat => `
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                            .map(cat => `
                                 <div class="chip chip-interactive"
                                      data-category="${cat.id}">
                                     ${esc(cat.name)}
@@ -228,13 +230,7 @@ function addIngredientRow(container, shouldFocus = true) {
                class="ing-amount-input"
                placeholder="Mängd">
 
-        <div class="autocomplete-wrap">
-            <input type="text"
-                   class="unit-input"
-                   placeholder="Enhet"
-                   autocomplete="off">
-            <div class="dropdown unit-dropdown"></div>
-        </div>
+        <select class="unit-select"></select>
 
         <button type="button"
                 class="btn btn-icon"
@@ -245,17 +241,14 @@ function addIngredientRow(container, shouldFocus = true) {
 
     const nameInput = row.querySelector('.ing-name-input');
     const nameDrop = row.querySelector('.ing-dropdown');
-    const unitInput = row.querySelector('.unit-input');
-    const unitDrop = row.querySelector('.unit-dropdown');
+    const unitSelect = row.querySelector('.unit-select');
 
     makeTypeahead(nameInput, nameDrop, fetchIngredients, (item) => {
         nameInput.value = item.display;
     });
 
-    makeTypeahead(unitInput, unitDrop, fetchUnits, (item) => {
-        unitInput.value = item.abbreviation;
-        unitInput.dataset.amountOptional = item.isAmountOptional ? 'true' : 'false';
-    });
+    // Populate units dropdown
+    populateUnitSelect(unitSelect, unitsCache);
 
     container.appendChild(row);
     initIcons();
@@ -290,9 +283,7 @@ function addInstructionRow(container, shouldFocus = true) {
 /* ─────────────────────────────────────
    SAVE
 ───────────────────────────────────── */
-
 async function saveRecipe() {
-
     const result = validateRecipeForm({
         requireAtLeastOneIngredient: true
     });
@@ -399,10 +390,20 @@ function initEvents() {
 /* ─────────────────────────────────────
    INIT
 ───────────────────────────────────── */
-function init() {
+async function init() {
     initImageUpload();
     initEvents();
     loadCategories();
+
+    // Load units once (for dropdown)
+    try {
+        unitsCache = await fetchAllUnits();
+    } catch (e) {
+        console.error(e);
+        showToast('Kunde inte ladda enheter', true);
+        unitsCache = [];
+    }
+
     addStep(false);
     initIcons();
 }

@@ -19,7 +19,9 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Multer setup for image uploads
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, '../uploads'));
+    },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
@@ -60,23 +62,14 @@ app.get('/ingredients', async (req, res) => {
     }
 });
 
-/* ---------- UNIT SEARCH ---------- */
+/* ---------- UNITS (LIST ALL FOR DROPDOWN) ---------- */
 app.get('/units', async (req, res) => {
-    const search = req.query.q;
-
-    if (!search) {
-        return res.json([]);
-    }
-
     try {
         const result = await db.query(`
-            SELECT id, name, abbreviation
+            SELECT id, name, abbreviation, is_amount_optional
             FROM unit
-            WHERE name ILIKE '%' || $1 || '%'
-               OR abbreviation ILIKE '%' || $1 || '%'
             ORDER BY name
-            LIMIT 20
-        `, [search]);
+        `);
 
         res.json(result.rows);
 
@@ -178,11 +171,18 @@ app.get('/recipes/:id', async (req, res) => {
 
         const steps = await Promise.all(stepsResult.rows.map(async (step) => {
             const ingredients = await db.query(`
-                SELECT ingredient_name, amount, unit, sort_order
-                FROM recipe_step_ingredients
-                WHERE recipe_step_id = $1
-                ORDER BY sort_order
+                SELECT 
+                    rsi.ingredient_name,
+                    rsi.amount,
+                    rsi.unit_id,
+                    u.abbreviation AS unit,
+                    rsi.sort_order
+                FROM recipe_step_ingredients rsi
+                LEFT JOIN unit u ON u.id = rsi.unit_id
+                WHERE rsi.recipe_step_id = $1
+                ORDER BY rsi.sort_order
             `, [step.id]);
+
             return {
                 ...step,
                 ingredients: ingredients.rows
@@ -265,10 +265,32 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
                 if (s.ingredients && s.ingredients.length > 0) {
                     for (let j = 0; j < s.ingredients.length; j++) {
                         const ing = s.ingredients[j];
+
+                        // New: supports unit_id (dropdown) or old unit (text)
+                        let unitId = ing.unit_id ?? null;
+
+                        if (!unitId && ing.unit) {
+                            const unitLookup = await client.query(
+                                `SELECT id FROM unit WHERE lower(abbreviation) = lower($1)`,
+                                [String(ing.unit).trim()]
+                            );
+                            if (unitLookup.rows.length > 0) {
+                                unitId = unitLookup.rows[0].id;
+                            }
+                        }
+
                         await client.query(`
-                            INSERT INTO recipe_step_ingredients (recipe_step_id, ingredient_name, amount, unit, sort_order)
-                            VALUES ($1, $2, $3, $4, $5)
-                        `, [stepId, ing.name, ing.amount || null, ing.unit || null, j + 1]);
+                            INSERT INTO recipe_step_ingredients
+                            (recipe_step_id, ingredient_name, amount, unit, unit_id, sort_order)
+                            VALUES ($1, $2, $3, $4, $5, $6)
+                        `, [
+                            stepId,
+                            ing.name,
+                            ing.amount || null,
+                            ing.unit || null,   // keep legacy column during migration
+                            unitId,
+                            j + 1
+                        ]);
                     }
                 }
             }
@@ -349,10 +371,32 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
                 if (s.ingredients && s.ingredients.length > 0) {
                     for (let j = 0; j < s.ingredients.length; j++) {
                         const ing = s.ingredients[j];
+
+                        // New: supports unit_id (dropdown) or old unit (text)
+                        let unitId = ing.unit_id ?? null;
+
+                        if (!unitId && ing.unit) {
+                            const unitLookup = await client.query(
+                                `SELECT id FROM unit WHERE lower(abbreviation) = lower($1)`,
+                                [String(ing.unit).trim()]
+                            );
+                            if (unitLookup.rows.length > 0) {
+                                unitId = unitLookup.rows[0].id;
+                            }
+                        }
+
                         await client.query(`
-                            INSERT INTO recipe_step_ingredients (recipe_step_id, ingredient_name, amount, unit, sort_order)
-                            VALUES ($1, $2, $3, $4, $5)
-                        `, [stepId, ing.name, ing.amount || null, ing.unit || null, j + 1]);
+                            INSERT INTO recipe_step_ingredients
+                            (recipe_step_id, ingredient_name, amount, unit, unit_id, sort_order)
+                            VALUES ($1, $2, $3, $4, $5, $6)
+                        `, [
+                            stepId,
+                            ing.name,
+                            ing.amount || null,
+                            ing.unit || null,   // keep legacy column during migration
+                            unitId,
+                            j + 1
+                        ]);
                     }
                 }
             }

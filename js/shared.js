@@ -36,7 +36,7 @@ export function formatDate(dateString) {
 
 
 // ─────────────────────────────────────
-// TYPEAHEAD SYSTEM
+// TYPEAHEAD SYSTEM (used for ingredients search)
 // ─────────────────────────────────────
 export function makeTypeahead(inputEl, dropdownEl, fetchFn, onSelect) {
     let debounce = null;
@@ -93,7 +93,7 @@ export function makeTypeahead(inputEl, dropdownEl, fetchFn, onSelect) {
         if (results.length === 0) {
             dropdownEl.innerHTML = '<div class="dropdown-empty">Inga träffar</div>';
         } else {
-            results.forEach((item, i) => {
+            results.forEach((item) => {
                 const div = document.createElement('div');
                 div.className = 'dropdown-item';
                 div.textContent = item.display;
@@ -132,7 +132,7 @@ export function makeTypeahead(inputEl, dropdownEl, fetchFn, onSelect) {
 
 
 // ─────────────────────────────────────
-// TYPEAHEAD FETCHERS
+// FETCHERS
 // ─────────────────────────────────────
 export async function fetchIngredients(q) {
     const res = await fetch(`${API}/ingredients?q=${encodeURIComponent(q)}`);
@@ -143,25 +143,51 @@ export async function fetchIngredients(q) {
     }));
 }
 
-export async function fetchUnits(q) {
-    const res = await fetch(`${API}/units?q=${encodeURIComponent(q)}`);
+// NEW: fetch all units (for dropdown)
+export async function fetchAllUnits() {
+    const res = await fetch(`${API}/units`);
+    if (!res.ok) throw new Error('Failed to fetch units');
     const data = await res.json();
 
-    return data.map(r => ({
-        abbreviation: r.abbreviation,
-        display: `${r.abbreviation} (${r.name})`,
-        isAmountOptional: !!r.is_amount_optional
-    }));
+    // Normalize + sort (nice UX)
+    return (data || [])
+        .map(u => ({
+            id: u.id,
+            name: u.name,
+            abbreviation: u.abbreviation,
+            is_amount_optional: !!u.is_amount_optional
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, 'sv'));
 }
+
+// Helper: fill a <select> with units and store amount optional on selected option
+export function populateUnitSelect(selectEl, units, selectedUnitId = null) {
+    if (!selectEl) return;
+
+    selectEl.innerHTML = `
+        <option value="" disabled ${selectedUnitId ? '' : 'selected'}>
+            Välj enhet…
+        </option>
+        ${units.map(u => `
+            <option value="${u.id}" data-amount-optional="${u.is_amount_optional ? 'true' : 'false'}">
+                ${esc(u.abbreviation)} (${esc(u.name)})
+            </option>
+        `).join('')}
+    `;
+
+    if (selectedUnitId) {
+        selectEl.value = String(selectedUnitId);
+    }
+}
+
 
 // ─────────────────────────────────────
 // RECIPE VALIDATION (Create & Edit)
+// Now reads unit_id from dropdown (.unit-select)
 // ─────────────────────────────────────
-
 export function validateRecipeForm({
     requireAtLeastOneIngredient = true
 }) {
-
     const nameInput = document.getElementById('recipe-name');
     const servingsInput = document.getElementById('recipe-servings');
 
@@ -185,7 +211,6 @@ export function validateRecipeForm({
     const steps = [];
 
     for (const stepEl of stepEls) {
-
         const title = stepEl.querySelector('.step-title-input')?.value.trim();
 
         const instructionFields = [...stepEl.querySelectorAll('.instr-input')];
@@ -206,26 +231,28 @@ export function validateRecipeForm({
         const ingredients = [];
 
         for (const row of ingredientRows) {
-
             const nameField = row.querySelector('.ing-name-input');
             const amountField = row.querySelector('.ing-amount-input');
-            const unitField = row.querySelector('.unit-input');
+            const unitSelect = row.querySelector('.unit-select');
 
             const ingName = nameField?.value.trim();
             const ingAmount = amountField?.value.trim().replace(',', '.');
-            const ingUnit = unitField?.value.trim();
+            const unitId = unitSelect?.value ? Number(unitSelect.value) : null;
 
-            if (ingName || ingAmount || ingUnit) {
+            // If any of the fields are touched, validate the row
+            if (ingName || ingAmount || unitId) {
 
                 if (!ingName) {
                     return { valid: false, message: 'Ingrediens saknar namn', focus: nameField };
                 }
 
-                if (!ingUnit) {
-                    return { valid: false, message: `Ange enhet för ${ingName}`, focus: unitField };
+                if (!unitId) {
+                    return { valid: false, message: `Välj enhet för ${ingName}`, focus: unitSelect };
                 }
 
-                const isOptional = unitField?.dataset?.amountOptional === 'true';
+                // amount optional?
+                const selectedOpt = unitSelect.selectedOptions?.[0];
+                const isOptional = selectedOpt?.dataset?.amountOptional === 'true';
 
                 if (!isOptional) {
                     if (!ingAmount || isNaN(Number(ingAmount))) {
@@ -240,7 +267,7 @@ export function validateRecipeForm({
                 ingredients.push({
                     name: ingName,
                     amount: ingAmount,
-                    unit: ingUnit
+                    unit_id: unitId
                 });
             }
         }
@@ -249,9 +276,7 @@ export function validateRecipeForm({
     }
 
     if (requireAtLeastOneIngredient) {
-        const totalIngredients = steps.reduce((sum, step) => {
-            return sum + step.ingredients.length;
-        }, 0);
+        const totalIngredients = steps.reduce((sum, step) => sum + step.ingredients.length, 0);
 
         if (totalIngredients === 0) {
             return {

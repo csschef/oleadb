@@ -1,12 +1,21 @@
-import { initIcons } from './shared.js';
+// js/edit.js
+import {
+    API,
+    esc,
+    initIcons,
+    makeTypeahead,
+    fetchIngredients,
+    fetchAllUnits,
+    populateUnitSelect
+} from './shared.js';
 
 initIcons();
 
-const API = `http://${window.location.hostname}:3000`;
 const urlParams = new URLSearchParams(window.location.search);
 const recipeId = urlParams.get('id');
 
 let selectedCategories = [];
+let unitsCache = [];
 
 if (!recipeId) {
     window.location.href = 'index.html';
@@ -72,82 +81,6 @@ function toggleCategory(id) {
     });
 }
 window.toggleCategory = toggleCategory;
-
-/* ── TYPEAHEAD FOR UNITS AND INGREDIENTS ── */
-function makeTypeahead(inputEl, dropdownEl, fetchFn, onSelect) {
-    let debounce = null;
-    let focused = -1;
-    let items = [];
-
-    inputEl.addEventListener('input', () => {
-        clearTimeout(debounce);
-        const q = inputEl.value.trim();
-        if (!q) { close(); return; }
-        debounce = setTimeout(async () => {
-            items = await fetchFn(q);
-            render(items);
-        }, 200);
-    });
-
-    inputEl.addEventListener('keydown', (e) => {
-        if (!dropdownEl.classList.contains('open')) return;
-        if (e.key === 'ArrowDown') { focused = Math.min(focused + 1, items.length - 1); highlight(); e.preventDefault(); }
-        if (e.key === 'ArrowUp') { focused = Math.max(focused - 1, 0); highlight(); e.preventDefault(); }
-        if (e.key === 'Enter' && focused >= 0) { select(items[focused]); e.preventDefault(); }
-        if (e.key === 'Escape') close();
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!dropdownEl.contains(e.target) && e.target !== inputEl) close();
-    });
-
-    function render(items) {
-        focused = -1;
-        dropdownEl.innerHTML = '';
-        if (items.length === 0) {
-            dropdownEl.innerHTML = '<div class="dropdown-empty">Inga träffar</div>';
-        } else {
-            items.forEach((item, i) => {
-                const div = document.createElement('div');
-                div.className = 'dropdown-item';
-                div.textContent = item.display;
-                div.addEventListener('mousedown', (e) => { e.preventDefault(); select(item); });
-                dropdownEl.appendChild(div);
-            });
-        }
-        dropdownEl.classList.add('open');
-    }
-
-    function highlight() {
-        [...dropdownEl.querySelectorAll('.dropdown-item')].forEach((el, i) => {
-            el.classList.toggle('focused', i === focused);
-        });
-    }
-
-    function select(item) {
-        onSelect(item);
-        close();
-    }
-
-    function close() {
-        dropdownEl.classList.remove('open');
-        dropdownEl.innerHTML = '';
-        items = [];
-        focused = -1;
-    }
-}
-
-async function fetchIngredients(q) {
-    const res = await fetch(`${API}/ingredients?q=${encodeURIComponent(q)}`);
-    const data = await res.json();
-    return data.map(r => ({ id: r.id, display: r.name }));
-}
-
-async function fetchUnits(q) {
-    const res = await fetch(`${API}/units?q=${encodeURIComponent(q)}`);
-    const data = await res.json();
-    return data.map(r => ({ abbreviation: r.abbreviation, display: `${r.abbreviation} (${r.name})` }));
-}
 
 /* ── STEPS & INGREDIENTS ── */
 function addStep(data = null, shouldFocus = true) {
@@ -217,7 +150,7 @@ function addStep(data = null, shouldFocus = true) {
     }
 
     container.appendChild(stepEl);
-    lucide.createIcons();
+    initIcons();
     if (shouldFocus) titleInput.focus();
 }
 
@@ -230,10 +163,7 @@ function addIngredientRow(container, data = null, shouldFocus = true) {
             <div class="dropdown ing-dropdown"></div>
         </div>
         <input type="text" class="ing-amount-input" placeholder="Mängd">
-        <div class="autocomplete-wrap">
-            <input type="text" class="unit-input" placeholder="Enhet" autocomplete="off">
-            <div class="dropdown unit-dropdown"></div>
-        </div>
+        <select class="unit-select"></select>
         <button type="button" class="btn btn-icon remove-ing-btn">
             <i data-lucide="x" style="width: 16px; height: 16px;"></i>
         </button>
@@ -242,30 +172,25 @@ function addIngredientRow(container, data = null, shouldFocus = true) {
     const nameInput = row.querySelector('.ing-name-input');
     const nameDrop = row.querySelector('.ing-dropdown');
     const amountInput = row.querySelector('.ing-amount-input');
-    const unitInput = row.querySelector('.unit-input');
-    const unitDrop = row.querySelector('.unit-dropdown');
+    const unitSelect = row.querySelector('.unit-select');
     const removeBtn = row.querySelector('.remove-ing-btn');
 
     makeTypeahead(nameInput, nameDrop, fetchIngredients, (item) => {
         nameInput.value = item.display;
     });
 
-    makeTypeahead(unitInput, unitDrop, fetchUnits, (item) => {
-        unitInput.value = item.abbreviation;
-    });
+    populateUnitSelect(unitSelect, unitsCache, data?.unit_id ?? null);
 
-    removeBtn.addEventListener('click', () => {
-        row.remove();
-    });
+    removeBtn.addEventListener('click', () => row.remove());
 
     if (data) {
         nameInput.value = data.ingredient_name || '';
         amountInput.value = data.amount || '';
-        unitInput.value = data.unit || '';
+        // unit preselect handled above via unit_id
     }
 
     container.appendChild(row);
-    lucide.createIcons();
+    initIcons();
     if (shouldFocus) nameInput.focus();
 }
 
@@ -282,18 +207,20 @@ function addInstructionRow(container, text = '', shouldFocus = true) {
     const textarea = row.querySelector('textarea');
     const removeBtn = row.querySelector('.remove-instr-btn');
 
-    removeBtn.addEventListener('click', () => {
-        row.remove();
-    });
+    removeBtn.addEventListener('click', () => row.remove());
 
     container.appendChild(row);
-    lucide.createIcons();
+    initIcons();
     if (shouldFocus) textarea.focus();
 }
 
 /* ── INITIAL LOAD ── */
 async function init() {
     try {
+        // Load units first (needed for unit dropdown)
+        unitsCache = await fetchAllUnits();
+
+        // Categories
         const catRes = await fetch(`${API}/categories`);
         const allCategories = await catRes.json();
         const selector = document.getElementById('category-selector');
@@ -314,8 +241,8 @@ async function init() {
                     </div>
                     <div class="chip-group">
                         ${groups[type]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map(cat => `
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                            .map(cat => `
                                 <div class="chip chip-interactive" data-id="${cat.id}" onclick="toggleCategory(${cat.id})">
                                     ${esc(cat.name)}
                                 </div>
@@ -324,6 +251,7 @@ async function init() {
                 </div>
             `).join('');
 
+        // Recipe
         const res = await fetch(`${API}/recipes/${recipeId}`);
         if (!res.ok) throw new Error('Recipe not found');
         const recipe = await res.json();
@@ -352,6 +280,8 @@ async function init() {
         } else {
             addStep(null, false);
         }
+
+        initIcons();
 
     } catch (err) {
         console.error(err);
@@ -383,8 +313,12 @@ document.getElementById('save-btn').addEventListener('click', async () => {
         for (const row of ingRows) {
             const iName = row.querySelector('.ing-name-input').value.trim();
             const iAmount = row.querySelector('.ing-amount-input').value.trim().replace(',', '.');
-            const iUnit = row.querySelector('.unit-input').value.trim();
-            if (iName) ingredients.push({ name: iName, amount: iAmount, unit: iUnit });
+            const unitSelect = row.querySelector('.unit-select');
+            const unitId = unitSelect?.value ? Number(unitSelect.value) : null;
+
+            if (iName) {
+                ingredients.push({ name: iName, amount: iAmount, unit_id: unitId });
+            }
         }
 
         if (title || instructions || ingredients.length > 0) {
@@ -409,7 +343,7 @@ document.getElementById('save-btn').addEventListener('click', async () => {
     const originalBtnHtml = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width: 20px; height: 20px;"></i> Sparar…';
-    if (window.lucide) lucide.createIcons();
+    initIcons();
 
     try {
         const res = await fetch(`${API}/recipes/${recipeId}`, {
@@ -427,9 +361,8 @@ document.getElementById('save-btn').addEventListener('click', async () => {
         showToast('Något gick fel, försök igen', true);
         btn.disabled = false;
         btn.innerHTML = originalBtnHtml;
-        if (window.lucide) lucide.createIcons();
+        initIcons();
     }
 });
 
-const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 init();

@@ -137,11 +137,23 @@ visit: http://localhost:3000
 
 ---
 
-## Database
+## Database Architecture
 
 This repository does **not** include the live PostgreSQL database.
 
 The full database structure (schema) can be found here: /database/schema.sql
+
+### Entity Relationship Diagram
+
+<img width="2351" height="740" alt="erd" src="https://github.com/user-attachments/assets/04449197-6e07-4c20-a2cb-d9182acda23b" />
+
+The database is fully normalized and enforces:
+
+- One-to-many relationships (recipes → steps → step ingredients)
+- Many-to-many category mapping
+- Foreign key integrity
+- Cascading deletes where appropriate
+- Strict NOT NULL constraints where required
 
 The schema file contains:
 

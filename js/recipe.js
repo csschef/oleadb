@@ -104,7 +104,7 @@ function renderSteps() {
                                 <span class="ing-amount">
                                     ${scaleIngredient(i, currentServings)}
                                 </span>
-                                <span class="ing-name">${esc(i.ingredient_name)}</span>
+                                <span class="ing-name">${esc(i.name)}</span>
                             </li>
                         `).join('')}
                     </ul>
@@ -253,7 +253,7 @@ async function load() {
         const ingredientCount = new Set(
             (r.steps || [])
                 .flatMap(step => step.ingredients || [])
-                .map(i => i.ingredient_name?.toLowerCase())
+                .map(i => i.name?.toLowerCase())
         ).size;
 
         el.className = 'recipe-detail';

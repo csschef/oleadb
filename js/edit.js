@@ -6,30 +6,29 @@ import {
     makeTypeahead,
     fetchIngredients,
     fetchAllUnits,
-    populateUnitSelect
+    populateUnitSelect,
+    validateRecipeForm
 } from './shared.js';
-
-initIcons();
 
 const urlParams = new URLSearchParams(window.location.search);
 const recipeId = urlParams.get('id');
-
-let selectedCategories = [];
-let unitsCache = [];
 
 if (!recipeId) {
     window.location.href = 'index.html';
 }
 
-/* ── TOAST ── */
+let selectedCategories = [];
+let unitsCache = [];
+
 function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
+    if (!t) return;
+
     t.textContent = msg;
     t.className = 'toast show' + (isError ? ' error' : '');
     setTimeout(() => t.className = 'toast', 3000);
 }
 
-/* ── IMAGE HANDLING ── */
 const dropArea = document.getElementById('image-drop-area');
 const imageInput = document.getElementById('image-input');
 const previewContainer = document.getElementById('image-preview-container');
@@ -56,13 +55,12 @@ function handleFile(file) {
     reader.readAsDataURL(file);
 }
 
-/* ── CATEGORIES ── */
 const TYPE_TRANSLATIONS = {
-    'component': 'Komponent',
-    'main_ingredient': 'Huvudingrediens',
-    'cuisine': 'Kök',
-    'time': 'Tid',
-    'occasion': 'Tillfälle'
+    component: 'Komponent',
+    main_ingredient: 'Huvudingrediens',
+    cuisine: 'Kök',
+    time: 'Tid',
+    occasion: 'Tillfälle'
 };
 
 const TYPE_ORDER = ['main_ingredient', 'cuisine', 'component', 'time', 'occasion'];
@@ -74,17 +72,19 @@ function toggleCategory(id) {
     } else {
         selectedCategories.push(id);
     }
-    const chips = document.querySelectorAll('#category-selector .chip');
-    chips.forEach(chip => {
-        const chipId = parseInt(chip.dataset.id);
-        chip.classList.toggle('active', selectedCategories.includes(chipId));
-    });
+
+    document.querySelectorAll('#category-selector .chip')
+        .forEach(chip => {
+            const chipId = parseInt(chip.dataset.id);
+            chip.classList.toggle('active', selectedCategories.includes(chipId));
+        });
 }
+
 window.toggleCategory = toggleCategory;
 
-/* ── STEPS & INGREDIENTS ── */
 function addStep(data = null, shouldFocus = true) {
     const container = document.getElementById('steps-container');
+
     const stepEl = document.createElement('div');
     stepEl.className = 'step-item';
     stepEl.innerHTML = `
@@ -92,54 +92,53 @@ function addStep(data = null, shouldFocus = true) {
             <div class="step-item-title-row">
                 <input type="text" class="step-title-input" placeholder="Titel för detta steg" autocomplete="off">
             </div>
-            <button type="button" class="btn btn-icon btn-remove-step" title="Ta bort steg">
-                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+            <button type="button" class="btn btn-icon btn-remove-step">
+                <i data-lucide="trash-2"></i>
             </button>
         </div>
-        
+
         <div class="step-ingredients-section">
             <h4>Ingredienser</h4>
             <div class="step-ingredients-list"></div>
-            <button type="button" class="btn btn-ghost btn-sm add-step-ing-btn" style="width: 100%; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                <i data-lucide="plus-circle" style="width: 14px; height: 14px;"></i> Lägg till ingrediens
+            <button type="button" class="btn btn-ghost btn-sm add-step-ing-btn">
+                <i data-lucide="plus-circle"></i> Lägg till ingrediens
             </button>
         </div>
 
         <div class="step-instructions-section">
             <h4>Gör så här</h4>
             <div class="instruction-list-nested"></div>
-            <button type="button" class="btn btn-ghost btn-sm add-step-instr-btn" style="width: 100%; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                <i data-lucide="plus-circle" style="width: 14px; height: 14px;"></i> Lägg till instruktion
+            <button type="button" class="btn btn-ghost btn-sm add-step-instr-btn">
+                <i data-lucide="plus-circle"></i> Lägg till instruktion
             </button>
         </div>
     `;
 
     const ingredientsList = stepEl.querySelector('.step-ingredients-list');
-    const addIngBtn = stepEl.querySelector('.add-step-ing-btn');
     const instructionsList = stepEl.querySelector('.instruction-list-nested');
-    const addInstrBtn = stepEl.querySelector('.add-step-instr-btn');
-    const removeStepBtn = stepEl.querySelector('.btn-remove-step');
-    const titleInput = stepEl.querySelector('.step-title-input');
 
-    addIngBtn.addEventListener('click', () => addIngredientRow(ingredientsList));
-    addInstrBtn.addEventListener('click', () => addInstructionRow(instructionsList));
-
-    removeStepBtn.addEventListener('click', () => {
+    stepEl.querySelector('.btn-remove-step').addEventListener('click', () => {
         stepEl.remove();
-        if (container.querySelectorAll('.step-item').length === 0) addStep();
+        if (!container.querySelector('.step-item')) addStep();
     });
 
+    stepEl.querySelector('.add-step-ing-btn')
+        .addEventListener('click', () => addIngredientRow(ingredientsList));
+
+    stepEl.querySelector('.add-step-instr-btn')
+        .addEventListener('click', () => addInstructionRow(instructionsList));
+
     if (data) {
-        titleInput.value = data.title || '';
+        stepEl.querySelector('.step-title-input').value = data.title || '';
 
         if (data.instructions) {
-            const lines = data.instructions.split('\n');
-            lines.forEach(line => addInstructionRow(instructionsList, line, false));
+            data.instructions.split('\n')
+                .forEach(line => addInstructionRow(instructionsList, line, false));
         } else {
             addInstructionRow(instructionsList, '', false);
         }
 
-        if (data.ingredients && data.ingredients.length > 0) {
+        if (data.ingredients?.length) {
             data.ingredients.forEach(ing => addIngredientRow(ingredientsList, ing, false));
         } else {
             addIngredientRow(ingredientsList, null, false);
@@ -151,12 +150,13 @@ function addStep(data = null, shouldFocus = true) {
 
     container.appendChild(stepEl);
     initIcons();
-    if (shouldFocus) titleInput.focus();
+    if (shouldFocus) stepEl.querySelector('.step-title-input').focus();
 }
 
 function addIngredientRow(container, data = null, shouldFocus = true) {
     const row = document.createElement('div');
     row.className = 'ingredient-row-nested';
+
     row.innerHTML = `
         <div class="autocomplete-wrap">
             <input type="text" class="ing-name-input" placeholder="Namn" autocomplete="off">
@@ -165,7 +165,7 @@ function addIngredientRow(container, data = null, shouldFocus = true) {
         <input type="text" class="ing-amount-input" placeholder="Mängd">
         <select class="unit-select"></select>
         <button type="button" class="btn btn-icon remove-ing-btn">
-            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            <i data-lucide="x"></i>
         </button>
     `;
 
@@ -173,20 +173,20 @@ function addIngredientRow(container, data = null, shouldFocus = true) {
     const nameDrop = row.querySelector('.ing-dropdown');
     const amountInput = row.querySelector('.ing-amount-input');
     const unitSelect = row.querySelector('.unit-select');
-    const removeBtn = row.querySelector('.remove-ing-btn');
 
-    makeTypeahead(nameInput, nameDrop, fetchIngredients, (item) => {
-        nameInput.value = item.display;
-    });
+    makeTypeahead(nameInput, nameDrop, fetchIngredients);
 
     populateUnitSelect(unitSelect, unitsCache, data?.unit_id ?? null);
 
-    removeBtn.addEventListener('click', () => row.remove());
+    row.querySelector('.remove-ing-btn')
+        .addEventListener('click', () => row.remove());
 
     if (data) {
         nameInput.value = data.ingredient_name || '';
         amountInput.value = data.amount || '';
-        // unit preselect handled above via unit_id
+        if (data.ingredient_id) {
+            nameInput.dataset.ingredientId = data.ingredient_id;
+        }
     }
 
     container.appendChild(row);
@@ -197,30 +197,26 @@ function addIngredientRow(container, data = null, shouldFocus = true) {
 function addInstructionRow(container, text = '', shouldFocus = true) {
     const row = document.createElement('div');
     row.className = 'instruction-row-nested';
+
     row.innerHTML = `
         <textarea class="instr-input" placeholder="Skriv instruktion…">${esc(text)}</textarea>
-        <button type="button" class="btn btn-icon remove-instr-btn" style="margin-top: 8px;">
-            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+        <button type="button" class="btn btn-icon remove-instr-btn">
+            <i data-lucide="x"></i>
         </button>
     `;
 
-    const textarea = row.querySelector('textarea');
-    const removeBtn = row.querySelector('.remove-instr-btn');
-
-    removeBtn.addEventListener('click', () => row.remove());
+    row.querySelector('.remove-instr-btn')
+        .addEventListener('click', () => row.remove());
 
     container.appendChild(row);
     initIcons();
-    if (shouldFocus) textarea.focus();
+    if (shouldFocus) row.querySelector('textarea').focus();
 }
 
-/* ── INITIAL LOAD ── */
 async function init() {
     try {
-        // Load units first (needed for unit dropdown)
         unitsCache = await fetchAllUnits();
 
-        // Categories
         const catRes = await fetch(`${API}/categories`);
         const allCategories = await catRes.json();
         const selector = document.getElementById('category-selector');
@@ -251,118 +247,107 @@ async function init() {
                 </div>
             `).join('');
 
-        // Recipe
         const res = await fetch(`${API}/recipes/${recipeId}`);
-        if (!res.ok) throw new Error('Recipe not found');
+        if (!res.ok) throw new Error();
+
         const recipe = await res.json();
 
         document.getElementById('recipe-name').value = recipe.name;
         document.getElementById('recipe-description').value = recipe.description || '';
         document.getElementById('recipe-servings').value = recipe.servings || '';
         document.getElementById('recipe-preptime').value = recipe.prep_time_minutes || '';
-        document.getElementById('cancel-btn').href = `recipe.html?id=${recipeId}`;
 
         if (recipe.image_url) {
             previewContainer.innerHTML = `<img src="${API}${recipe.image_url}">`;
         }
 
         selectedCategories = (recipe.categories || []).map(c => c.id);
-        const chips = document.querySelectorAll('#category-selector .chip');
-        chips.forEach(chip => {
-            const chipId = parseInt(chip.dataset.id);
-            chip.classList.toggle('active', selectedCategories.includes(chipId));
-        });
+        document.querySelectorAll('#category-selector .chip')
+            .forEach(chip => {
+                const id = parseInt(chip.dataset.id);
+                chip.classList.toggle('active', selectedCategories.includes(id));
+            });
 
         const stepsContainer = document.getElementById('steps-container');
         stepsContainer.innerHTML = '';
-        if (recipe.steps && recipe.steps.length > 0) {
+        if (recipe.steps?.length) {
             recipe.steps.forEach(s => addStep(s, false));
         } else {
             addStep(null, false);
         }
 
+        setTimeout(() => {
+            document.activeElement?.blur();
+        }, 0);
+
         initIcons();
 
     } catch (err) {
-        console.error(err);
         showToast('Kunde inte ladda receptdata', true);
     }
 }
 
-document.getElementById('add-step-btn').addEventListener('click', () => addStep());
+document.getElementById('add-step-btn')
+    .addEventListener('click', () => addStep());
 
-/* ── SAVE CHANGES ── */
-document.getElementById('save-btn').addEventListener('click', async () => {
-    const name = document.getElementById('recipe-name').value.trim();
-    if (!name) { showToast('Ange ett receptnamn', true); return; }
+document.getElementById('save-btn')
+    .addEventListener('click', async () => {
 
-    const steps = [];
-    const stepEls = [...document.querySelectorAll('.step-item')];
-
-    for (const stepEl of stepEls) {
-        const title = stepEl.querySelector('.step-title-input').value.trim();
-
-        const instructions = [...stepEl.querySelectorAll('.instr-input')]
-            .map(t => t.value.trim())
-            .filter(t => t !== '')
-            .join('\n');
-
-        const ingredients = [];
-        const ingRows = [...stepEl.querySelectorAll('.ingredient-row-nested')];
-
-        for (const row of ingRows) {
-            const iName = row.querySelector('.ing-name-input').value.trim();
-            const iAmount = row.querySelector('.ing-amount-input').value.trim().replace(',', '.');
-            const unitSelect = row.querySelector('.unit-select');
-            const unitId = unitSelect?.value ? Number(unitSelect.value) : null;
-
-            if (iName) {
-                ingredients.push({ name: iName, amount: iAmount, unit_id: unitId });
-            }
-        }
-
-        if (title || instructions || ingredients.length > 0) {
-            steps.push({ title, instructions, ingredients });
-        }
-    }
-
-    if (steps.length === 0) { showToast('Lägg till minst ett steg', true); return; }
-
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('description', document.getElementById('recipe-description').value.trim());
-    formData.append('servings', document.getElementById('recipe-servings').value);
-    formData.append('prep_time_minutes', document.getElementById('recipe-preptime').value);
-    formData.append('categories', JSON.stringify(selectedCategories));
-    formData.append('steps', JSON.stringify(steps));
-
-    const imageFile = document.getElementById('image-input').files[0];
-    if (imageFile) formData.append('image', imageFile);
-
-    const btn = document.getElementById('save-btn');
-    const originalBtnHtml = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width: 20px; height: 20px;"></i> Sparar…';
-    initIcons();
-
-    try {
-        const res = await fetch(`${API}/recipes/${recipeId}`, {
-            method: 'PUT',
-            body: formData
+        const result = validateRecipeForm({
+            requireAtLeastOneIngredient: true
         });
 
-        if (!res.ok) throw new Error(await res.text());
+        if (!result.valid) {
+            showToast(result.message, true);
+            result.focus?.focus();
+            return;
+        }
 
-        showToast('✅ Ändringar sparade!');
-        setTimeout(() => window.location.href = `recipe.html?id=${recipeId}`, 1500);
+        const {
+            name,
+            servings,
+            description,
+            prep_time_minutes,
+            steps
+        } = result.data;
 
-    } catch (err) {
-        console.error(err);
-        showToast('Något gick fel, försök igen', true);
-        btn.disabled = false;
-        btn.innerHTML = originalBtnHtml;
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('description', description);
+        formData.append('servings', servings);
+        formData.append('prep_time_minutes', prep_time_minutes);
+        formData.append('categories', JSON.stringify(selectedCategories));
+        formData.append('steps', JSON.stringify(steps));
+
+        const imageFile = document.getElementById('image-input')?.files[0];
+        if (imageFile) formData.append('image', imageFile);
+
+        const btn = document.getElementById('save-btn');
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Sparar…';
         initIcons();
-    }
-});
+
+        try {
+            const res = await fetch(`${API}/recipes/${recipeId}`, {
+                method: 'PUT',
+                body: formData
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Fel vid uppdatering');
+            }
+
+            window.location.href = `recipe.html?id=${recipeId}`;
+
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = original;
+            initIcons();
+            showToast(err.message || 'Något gick fel', true);
+        }
+    });
 
 init();

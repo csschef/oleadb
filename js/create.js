@@ -13,9 +13,6 @@ import {
 let selectedCategories = [];
 let unitsCache = [];
 
-/* ─────────────────────────────────────
-   TOAST
-───────────────────────────────────── */
 function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     if (!t) return;
@@ -28,9 +25,6 @@ function showToast(msg, isError = false) {
     }, 3000);
 }
 
-/* ─────────────────────────────────────
-   IMAGE HANDLING
-───────────────────────────────────── */
 function initImageUpload() {
     const dropArea = document.getElementById('image-drop-area');
     const imageInput = document.getElementById('image-input');
@@ -70,9 +64,6 @@ function initImageUpload() {
     }
 }
 
-/* ─────────────────────────────────────
-   CATEGORIES
-───────────────────────────────────── */
 const TYPE_TRANSLATIONS = {
     component: 'Komponent',
     main_ingredient: 'Huvudingrediens',
@@ -133,7 +124,7 @@ async function loadCategories() {
         });
 
     } catch (err) {
-        console.error('Failed to load categories', err);
+        console.error(err);
     }
 }
 
@@ -153,9 +144,6 @@ function toggleCategory(id) {
         });
 }
 
-/* ─────────────────────────────────────
-   STEPS
-───────────────────────────────────── */
 function addStep(shouldFocus = true) {
     const container = document.getElementById('steps-container');
     if (!container) return;
@@ -243,11 +231,8 @@ function addIngredientRow(container, shouldFocus = true) {
     const nameDrop = row.querySelector('.ing-dropdown');
     const unitSelect = row.querySelector('.unit-select');
 
-    makeTypeahead(nameInput, nameDrop, fetchIngredients, (item) => {
-        nameInput.value = item.display;
-    });
+    makeTypeahead(nameInput, nameDrop, fetchIngredients);
 
-    // Populate units dropdown
     populateUnitSelect(unitSelect, unitsCache);
 
     container.appendChild(row);
@@ -280,9 +265,6 @@ function addInstructionRow(container, shouldFocus = true) {
     }
 }
 
-/* ─────────────────────────────────────
-   SAVE
-───────────────────────────────────── */
 async function saveRecipe() {
     const result = validateRecipeForm({
         requireAtLeastOneIngredient: true
@@ -305,9 +287,9 @@ async function saveRecipe() {
     const formData = new FormData();
 
     formData.append('name', name);
-    formData.append('description', description || '');
+    formData.append('description', description);
     formData.append('servings', servings);
-    formData.append('prep_time_minutes', prep_time_minutes || '');
+    formData.append('prep_time_minutes', prep_time_minutes);
     formData.append('categories', JSON.stringify(selectedCategories));
     formData.append('steps', JSON.stringify(steps));
 
@@ -327,24 +309,22 @@ async function saveRecipe() {
             body: formData
         });
 
-        if (!res.ok) throw new Error();
+        const data = await res.json().catch(() => ({}));
 
-        showToast('✅ Recept sparat!');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1200);
+        if (!res.ok) {
+            throw new Error(data.error || 'Fel vid sparande');
+        }
+
+        window.location.href = 'index.html';
 
     } catch (err) {
-        showToast('Något gick fel, försök igen', true);
         btn.disabled = false;
         btn.innerHTML = originalHtml;
         initIcons();
+        showToast(err.message || 'Något gick fel', true);
     }
 }
 
-/* ─────────────────────────────────────
-   EVENT DELEGATION
-───────────────────────────────────── */
 function initEvents() {
     const container = document.getElementById('steps-container');
 
@@ -387,24 +367,24 @@ function initEvents() {
         ?.addEventListener('click', saveRecipe);
 }
 
-/* ─────────────────────────────────────
-   INIT
-───────────────────────────────────── */
 async function init() {
     initImageUpload();
     initEvents();
     loadCategories();
 
-    // Load units once (for dropdown)
     try {
         unitsCache = await fetchAllUnits();
     } catch (e) {
         console.error(e);
-        showToast('Kunde inte ladda enheter', true);
         unitsCache = [];
     }
 
     addStep(false);
+
+    setTimeout(() => {
+        document.activeElement?.blur();
+    }, 0);
+
     initIcons();
 }
 

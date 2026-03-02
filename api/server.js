@@ -185,12 +185,14 @@ app.get('/recipes/:id', async (req, res) => {
             stepsResult.rows.map(async (step) => {
                 const ingredients = await db.query(`
                     SELECT
-                        rsi.ingredient_name,
+                        rsi.ingredient_id,
+                        i.name AS ingredient_name,
                         rsi.amount,
                         rsi.unit_id,
                         u.abbreviation AS unit,
                         rsi.sort_order
                     FROM recipe_step_ingredients rsi
+                    JOIN ingredient i ON i.id = rsi.ingredient_id
                     LEFT JOIN unit u ON u.id = rsi.unit_id
                     WHERE rsi.recipe_step_id = $1
                     ORDER BY rsi.sort_order
@@ -235,12 +237,11 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
         return res.status(400).json({ error: 'Invalid data format' });
     }
 
-    if (!name || !steps || steps.length === 0) {
+    if (!name || !steps?.length) {
         return res.status(400).json({ error: 'Name and at least one step required' });
     }
 
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
-
     const client = await db.connect();
 
     try {
@@ -251,8 +252,7 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
             (name, description, servings, prep_time_minutes, image_url)
             VALUES ($1, $2, $3, $4, $5)
             RETURNING id
-        `, [name, description || null, servings || null,
-            prep_time_minutes || null, imageUrl]);
+        `, [name, description, servings, prep_time_minutes, imageUrl]);
 
         const recipeId = recipeResult.rows[0].id;
 
@@ -273,21 +273,24 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
                 (recipe_id, title, instructions, sort_order)
                 VALUES ($1, $2, $3, $4)
                 RETURNING id
-            `, [recipeId, s.title || null,
-                s.instructions || null, i + 1]);
+            `, [recipeId, s.title || null, s.instructions || null, i + 1]);
 
             const stepId = stepResult.rows[0].id;
 
             for (let j = 0; j < (s.ingredients || []).length; j++) {
                 const ing = s.ingredients[j];
 
+                if (!ing.ingredient_id) {
+                    throw new Error('Ingredient ID missing');
+                }
+
                 await client.query(`
                     INSERT INTO recipe_step_ingredients
-                    (recipe_step_id, ingredient_name, amount, unit_id, sort_order)
+                    (recipe_step_id, ingredient_id, amount, unit_id, sort_order)
                     VALUES ($1, $2, $3, $4, $5)
                 `, [
                     stepId,
-                    ing.name,
+                    ing.ingredient_id,
                     ing.amount || null,
                     ing.unit_id ?? null,
                     j + 1
@@ -301,6 +304,11 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error(err);
+
+        if (err.message === 'Ingredient ID missing') {
+            return res.status(400).json({ error: 'Ogiltig ingrediens' });
+        }
+
         res.status(500).json({ error: 'Database error' });
     } finally {
         client.release();
@@ -320,7 +328,7 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
         return res.status(400).json({ error: 'Invalid data format' });
     }
 
-    if (!name || !steps || steps.length === 0) {
+    if (!name || !steps?.length) {
         return res.status(400).json({ error: 'Name and at least one step required' });
     }
 
@@ -329,30 +337,17 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        let updateQuery = `
+        await client.query(`
             UPDATE recipe
             SET name = $1,
                 description = $2,
                 servings = $3,
                 prep_time_minutes = $4
-        `;
-        const params = [name, description || null,
-                        servings || null, prep_time_minutes || null];
+            WHERE id = $5
+        `, [name, description, servings, prep_time_minutes, id]);
 
-        if (req.file) {
-            params.push(`/uploads/${req.file.filename}`);
-            updateQuery += `, image_url = $${params.length}`;
-        }
-
-        params.push(id);
-        updateQuery += ` WHERE id = $${params.length}`;
-
-        await client.query(updateQuery, params);
-
-        await client.query(
-            'DELETE FROM recipe_category_map WHERE recipe_id = $1',
-            [id]
-        );
+        await client.query('DELETE FROM recipe_category_map WHERE recipe_id = $1', [id]);
+        await client.query('DELETE FROM recipe_steps WHERE recipe_id = $1', [id]);
 
         if (categories?.length) {
             for (const catId of categories) {
@@ -363,11 +358,6 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
             }
         }
 
-        await client.query(
-            'DELETE FROM recipe_steps WHERE recipe_id = $1',
-            [id]
-        );
-
         for (let i = 0; i < steps.length; i++) {
             const s = steps[i];
 
@@ -376,21 +366,24 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
                 (recipe_id, title, instructions, sort_order)
                 VALUES ($1, $2, $3, $4)
                 RETURNING id
-            `, [id, s.title || null,
-                s.instructions || null, i + 1]);
+            `, [id, s.title || null, s.instructions || null, i + 1]);
 
             const stepId = stepResult.rows[0].id;
 
             for (let j = 0; j < (s.ingredients || []).length; j++) {
                 const ing = s.ingredients[j];
 
+                if (!ing.ingredient_id) {
+                    throw new Error('Ingredient ID missing');
+                }
+
                 await client.query(`
                     INSERT INTO recipe_step_ingredients
-                    (recipe_step_id, ingredient_name, amount, unit_id, sort_order)
+                    (recipe_step_id, ingredient_id, amount, unit_id, sort_order)
                     VALUES ($1, $2, $3, $4, $5)
                 `, [
                     stepId,
-                    ing.name,
+                    ing.ingredient_id,
                     ing.amount || null,
                     ing.unit_id ?? null,
                     j + 1
@@ -404,6 +397,11 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error(err);
+
+        if (err.message === 'Ingredient ID missing') {
+            return res.status(400).json({ error: 'Ogiltig ingrediens' });
+        }
+
         res.status(500).json({ error: 'Database error' });
     } finally {
         client.release();

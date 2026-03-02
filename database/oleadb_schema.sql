@@ -1,9 +1,8 @@
-﻿﻿-- OleaDB database schema
+﻿-- OleaDB database schema
 -- Generated with pg_dump --schema-only
 -- NOTE: This file contains only structure (no data)
 --
 -- PostgreSQL database dump
---
 
 -- Dumped from database version 18.2
 -- Dumped by pg_dump version 18.2
@@ -62,7 +61,7 @@ CREATE TABLE public.ingredient (
     id integer NOT NULL,
     name text NOT NULL,
     name_normalized text GENERATED ALWAYS AS (lower(TRIM(BOTH FROM name))) STORED,
-    ingredient_category_id integer
+    ingredient_category_id integer NOT NULL
 );
 
 
@@ -94,8 +93,8 @@ CREATE TABLE public.recipe (
     id integer NOT NULL,
     name text NOT NULL,
     description text,
-    servings integer,
-    prep_time_minutes integer,
+    servings integer NOT NULL,
+    prep_time_minutes integer NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     image_url text
@@ -171,10 +170,11 @@ ALTER SEQUENCE public.recipe_id_seq OWNED BY public.recipe.id;
 CREATE TABLE public.recipe_step_ingredients (
     id integer NOT NULL,
     recipe_step_id integer NOT NULL,
-    ingredient_name character varying(255) NOT NULL,
+    ingredient_name character varying(255),
     amount character varying(100),
     sort_order integer DEFAULT 1 NOT NULL,
-    unit_id integer NOT NULL
+    unit_id integer NOT NULL,
+    ingredient_id integer NOT NULL
 );
 
 
@@ -206,7 +206,7 @@ CREATE TABLE public.recipe_steps (
     id integer NOT NULL,
     recipe_id integer NOT NULL,
     title character varying(255),
-    instructions text,
+    instructions text NOT NULL,
     sort_order integer DEFAULT 1 NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
@@ -240,7 +240,7 @@ CREATE TABLE public.unit (
     id integer NOT NULL,
     name text NOT NULL,
     abbreviation text NOT NULL,
-    is_amount_optional boolean DEFAULT false
+    is_amount_optional boolean DEFAULT false NOT NULL
 );
 
 
@@ -449,6 +449,14 @@ ALTER TABLE ONLY public.recipe_category_map
 
 
 --
+-- Name: recipe_step_ingredients recipe_step_ingredients_ingredient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.recipe_step_ingredients
+    ADD CONSTRAINT recipe_step_ingredients_ingredient_id_fkey FOREIGN KEY (ingredient_id) REFERENCES public.ingredient(id) ON DELETE RESTRICT;
+
+
+--
 -- Name: recipe_step_ingredients recipe_step_ingredients_recipe_step_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -475,3 +483,4 @@ ALTER TABLE ONLY public.recipe_steps
 --
 -- PostgreSQL database dump complete
 --
+

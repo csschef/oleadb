@@ -145,7 +145,8 @@ The full database structure (schema) can be found here: /database/schema.sql
 
 ### Entity Relationship Diagram
 
-<img width="2351" height="740" alt="erd" src="https://github.com/user-attachments/assets/04449197-6e07-4c20-a2cb-d9182acda23b" />
+<img width="2432" height="870" alt="erd" src="https://github.com/user-attachments/assets/663b82d7-c045-48d2-bcb7-204ca3fd984a" />
+
 
 The database is fully normalized and enforces:
 

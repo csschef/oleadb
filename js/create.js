@@ -12,6 +12,7 @@ import {
 
 let selectedCategories = [];
 let unitsCache = [];
+let selectedImageFile = null;
 
 function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
@@ -56,10 +57,14 @@ function initImageUpload() {
     function handleFile(file) {
         if (!file || !file.type.startsWith('image/')) return;
 
+        selectedImageFile = file;
+
         const reader = new FileReader();
         reader.onload = (e) => {
-            previewContainer.innerHTML = `<img src="${e.target.result}" alt="Förhandsvisning">`;
+            previewContainer.innerHTML =
+                `<img src="${e.target.result}" alt="Förhandsvisning">`;
         };
+
         reader.readAsDataURL(file);
     }
 }
@@ -104,8 +109,8 @@ async function loadCategories() {
                     </div>
                     <div class="chip-group">
                         ${groups[type]
-                            .sort((a, b) => a.name.localeCompare(b.name))
-                            .map(cat => `
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(cat => `
                                 <div class="chip chip-interactive"
                                      data-category="${cat.id}">
                                     ${esc(cat.name)}
@@ -293,8 +298,7 @@ async function saveRecipe() {
     formData.append('categories', JSON.stringify(selectedCategories));
     formData.append('steps', JSON.stringify(steps));
 
-    const imageFile = document.getElementById('image-input')?.files[0];
-    if (imageFile) formData.append('image', imageFile);
+    if (selectedImageFile) formData.append('image', selectedImageFile);
 
     const btn = document.getElementById('save-btn');
     const originalHtml = btn.innerHTML;

@@ -228,7 +228,7 @@ app.get('/recipes/:id', async (req, res) => {
 /* ---------- CREATE RECIPE ---------- */
 app.post('/recipes', upload.single('image'), async (req, res) => {
     let { name, description, servings,
-          prep_time_minutes, categories, steps } = req.body;
+        prep_time_minutes, categories, steps } = req.body;
 
     try {
         if (typeof categories === 'string') categories = JSON.parse(categories);
@@ -319,7 +319,7 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
 app.put('/recipes/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
     let { name, description, servings,
-          prep_time_minutes, categories, steps } = req.body;
+        prep_time_minutes, categories, steps } = req.body;
 
     try {
         if (typeof categories === 'string') categories = JSON.parse(categories);
@@ -332,19 +332,32 @@ app.put('/recipes/:id', upload.single('image'), async (req, res) => {
         return res.status(400).json({ error: 'Name and at least one step required' });
     }
 
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
     const client = await db.connect();
 
     try {
         await client.query('BEGIN');
 
-        await client.query(`
-            UPDATE recipe
-            SET name = $1,
-                description = $2,
-                servings = $3,
-                prep_time_minutes = $4
-            WHERE id = $5
-        `, [name, description, servings, prep_time_minutes, id]);
+        if (imageUrl) {
+            await client.query(`
+                UPDATE recipe
+                SET name = $1,
+                    description = $2,
+                    servings = $3,
+                    prep_time_minutes = $4,
+                    image_url = $5
+                WHERE id = $6
+            `, [name, description, servings, prep_time_minutes, imageUrl, id]);
+        } else {
+            await client.query(`
+                UPDATE recipe
+                SET name = $1,
+                    description = $2,
+                    servings = $3,
+                    prep_time_minutes = $4
+                WHERE id = $5
+            `, [name, description, servings, prep_time_minutes, id]);
+        }
 
         await client.query('DELETE FROM recipe_category_map WHERE recipe_id = $1', [id]);
         await client.query('DELETE FROM recipe_steps WHERE recipe_id = $1', [id]);

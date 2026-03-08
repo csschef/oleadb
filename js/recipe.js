@@ -253,7 +253,7 @@ async function load() {
         const ingredientCount = new Set(
             (r.steps || [])
                 .flatMap(step => step.ingredients || [])
-                .map(i => i.name?.toLowerCase())
+                .map(i => i.ingredient_id)
         ).size;
 
         el.className = 'recipe-detail';
